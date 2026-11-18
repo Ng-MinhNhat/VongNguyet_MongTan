@@ -1,0 +1,151 @@
+{
+  "sequences": [
+    {
+      "dialogueID": "ngay_4_van_nguyet_sot",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Ngày 4: Lương thực đã cạn kiệt. Không khí ẩm lạnh và sự sợ hãi khiến Vân Nguyệt đổ bệnh, sốt cao. Cô khóc nấc lên trong cơn mê sảng.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Vân Nguyệt",
+          "text": "Tại anh... tại anh cứ cố chấp không chịu nghe lời ông lão đó... chúng ta mới bị nhốt ở đây... Em sợ lắm...",
+          "portrait": "VanNguyet_Khoc"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "(Tim thắt lại vì hối hận) Nguyệt, anh xin lỗi... Lỗi tại anh. Anh sẽ tìm thuốc hạ sốt cho em, em ráng cầm cự nhé!",
+          "portrait": "Main_LoLang"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Đến phòng y tế gia đình tìm thuốc",
+          "nextDialogueID": "end_scene_ngay_4",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Bat_Dau_Tim_Thuoc"
+        }
+      ]
+    },
+    {
+      "dialogueID": "end_scene_ngay_4",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Bạn lao đi trong căn biệt thự tăm tối, mang theo nỗi dằn vặt tột cùng...]",
+          "portrait": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "dialogueID": "ngay_4_ha_sot",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Đêm đó, sau khi uống viên thuốc bạn vất vả tìm được, Vân Nguyệt dần hạ sốt. Cô khẽ nắm lấy tay bạn.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Vân Nguyệt",
+          "text": "Anh ơi... em xin lỗi vì lúc sáng đã trách anh. Em không giận anh nữa đâu.",
+          "portrait": "VanNguyet_BinhThuong"
+        },
+        {
+          "speaker": "Vân Nguyệt",
+          "text": "Qua được chuyện này... mình về rồi cưới nhau, nha.",
+          "portrait": "VanNguyet_BinhThuong"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Ừ, anh hứa! Ngày mai trời tạnh, anh sẽ cõng em thoát khỏi đây.",
+          "portrait": "Main_BinhThuong"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Nắm chặt tay cô ấy đến sáng",
+          "nextDialogueID": "end_scene_ha_sot",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Vuot_Qua_Ngay_4"
+        }
+      ]
+    },
+    {
+      "dialogueID": "end_scene_ha_sot",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Vân Nguyệt đã tha thứ cho bạn, nhưng sâu thẳm trong lòng, bạn vẫn chưa thể tha thứ cho chính sự cố chấp của mình...]",
+          "portrait": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "dialogueID": "ngay_5_dinh_diem_lu_quet",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Đêm ngày 5... Bầu không khí tĩnh lặng đến rợn người. Chiếc radio cũ bỗng rè rè bắt được sóng.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Radio (Rè rè)",
+          "text": "...Cảnh báo... lũ quét và sạt lở đất nghiêm trọng tại khu vực đồi Mộng Mơ... Yêu cầu người dân di tản khẩn cấp...",
+          "portrait": ""
+        },
+        {
+          "speaker": "",
+          "text": "[RẦM! Mặt đất rung chuyển dữ dội. Một nửa khu homestay bị khối đất đá khổng lồ nghiền nát! Bức tường sập làm bung song sắt một khung cửa sổ.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Nguyệt! Nhà sập rồi! Bám chặt vào anh!",
+          "portrait": "Main_HoangMang"
+        },
+        {
+          "speaker": "",
+          "text": "[Bạn bế Vân Nguyệt chui qua khung cửa sổ vỡ, chạy thục mạng vào màn đêm mưa bão qua rừng thông.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "",
+          "text": "[ẦM! Một dòng lũ bùn hung hãn đổ ập xuống từ sườn đồi, xé toạc màn đêm và chia cắt hai người!]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "KHÔNG! NGUYỆT ƠI! Đưa tay cho anh!",
+          "portrait": "Main_SoHai"
+        },
+        {
+          "speaker": "",
+          "text": "[Khoảng cách quá xa, bạn không kịp nắm lấy tay cô ấy. Dòng nước xiết cuốn phăng bạn đi, đầu bạn đập mạnh vào một tảng đá...]",
+          "portrait": ""
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Chìm vào bóng tối...",
+          "nextDialogueID": "end_scene_lu_quet",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Main_Bi_Ngat"
+        }
+      ]
+    },
+    {
+      "dialogueID": "end_scene_lu_quet",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Ý thức mờ dần... Tiếng gào thét của bạn chìm khuất trong tiếng gầm rú của cơn bão dữ...]",
+          "portrait": ""
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

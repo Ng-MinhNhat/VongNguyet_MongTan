@@ -1,0 +1,148 @@
+{
+  "sequences": [
+    {
+      "dialogueID": "sang_ngay_2_quan_gia_di",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Sáng hôm sau, mưa vẫn không ngớt. Bùn đất từ trên đồi Mộng Mơ bắt đầu tràn xuống tận khoảnh sân trước.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Bà quản gia",
+          "text": "Mưa lớn quá, đất lở xuống ghê thật. Hai đứa ở yên trong nhà nhé, để bà mặc áo mưa, cầm đèn pin ra ngoài xem xét tình hình quanh homestay một chút.",
+          "portrait": "QuanGia_BinhThuong"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Trời đang sạt lở nguy hiểm lắm, bà đi cẩn thận nhé!",
+          "portrait": "Main_LoLang"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Chờ đợi bà quản gia quay về...",
+          "nextDialogueID": "phat_hien_mat_tich",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Cho_Doi_Quan_Gia"
+        }
+      ]
+    },
+    {
+      "dialogueID": "phat_hien_mat_tich",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Vài tiếng đồng hồ nặng nề trôi qua... Bà quản gia vẫn không trở lại. Bạn ra cửa sau tìm kiếm.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Móc treo áo mưa trống trơn... Cửa sau và cửa chính đều bị đất đá lấp kín mất rồi! Không mở được!",
+          "portrait": "Main_HoangMang"
+        },
+        {
+          "speaker": "",
+          "text": "[Nhìn qua khung cửa sổ có song sắt, bạn thấy chiếc đèn pin của bà quản gia rơi lăn lóc trong vũng bùn dưới sườn đồi, ánh đèn leo lét rồi vụt tắt...]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Vân Nguyệt",
+          "text": "Anh ơi... bà ấy... Không lẽ bà ấy bị lũ cuốn rồi sao? Đường đèo thì sạt lở không dắt xe ra được, điện thoại không có sóng... Chúng ta kẹt lại rồi!",
+          "portrait": "VanNguyet_Khoc"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Đường dây điện thoại bàn cũng chết rồi. Em bình tĩnh lại, anh sẽ tìm cách. Bây giờ chúng ta phải lục tìm các phòng xem còn thức ăn nước uống hay lối thoát nào khác không.",
+          "portrait": "Main_BinhThuong"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Bắt đầu khám phá khu biệt thự",
+          "nextDialogueID": "end_scene_kham_pha",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Kham_Pha_Biet_Thu"
+        }
+      ]
+    },
+    {
+      "dialogueID": "end_scene_kham_pha",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Bạn bắt đầu phá khóa và tìm kiếm trong những căn phòng lạnh lẽo của cô chủ...]",
+          "portrait": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "dialogueID": "manh_moi_nhat_ky",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Sau khi giải mã các bức tranh và ghép lại những lá thư bị xé, bạn mở được cuốn nhật ký cũ của cô chủ biệt thự.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "(Đọc thầm) \"... Mình không thể ở lại đây thêm được nữa. Đêm nào mình cũng thấy con bé... nghe tiếng nó gọi đòi về nhà...\"",
+          "portrait": "Main_ThacMac"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "(Đọc thầm) \"... Giá như hôm định mệnh đó, mình nghe lời ông lão dưới chân đèo, đừng cố chấp dắt con bé lên đèo Mệnh Khư...\"",
+          "portrait": "Main_HoangMang"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Ông lão dưới chân đèo?! Không lẽ... chính là ông lão ở trạm dừng chân Mộng Mơ? Con gái cô chủ đã chết trong vụ sạt lở đó...",
+          "portrait": "Main_SoHai"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Đóng nhật ký lại",
+          "nextDialogueID": "end_scene_manh_moi",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Da_Doc_Nhat_Ky_Co_Chu"
+        }
+      ]
+    },
+    {
+      "dialogueID": "manh_moi_anh_be_gai",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Trong két sắt, bạn tìm thấy một bức ảnh cũ chụp một bé gái.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Một bé gái... cài chiếc kẹp tóc màu đỏ. Đây chắc chắn là đứa con gái đã khuất của cô chủ. Chấp niệm của cô ấy ở ngôi nhà này quá lớn...",
+          "portrait": "Main_BinhThuong"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Cất bức ảnh đi",
+          "nextDialogueID": "end_scene_manh_moi",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Da_Xem_Anh_Be_Gai"
+        }
+      ]
+    },
+    {
+      "dialogueID": "end_scene_manh_moi",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Trực giác mách bảo bạn rằng những thứ này sẽ còn ám ảnh tâm trí bạn...]",
+          "portrait": ""
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

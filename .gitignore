@@ -1,0 +1,27 @@
+# Bỏ qua các thư mục tự sinh của Unity
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uilds/
+/[Bb]uild/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+
+# Bỏ qua các file cache và file hệ thống máy tính
+*.csproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Bỏ qua file hệ điều hành
+.DS_Store
+Thumbs.db

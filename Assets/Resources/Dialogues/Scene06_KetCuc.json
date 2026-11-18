@@ -1,0 +1,221 @@
+{
+  "sequences": [
+    {
+      "dialogueID": "ngay_6_tinh_day",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Sáng ngày 6. Bạn tỉnh dậy bên bờ suối. Đầu đau như búa bổ. Ngồi cạnh bạn là một cô bé tết tóc cài chiếc kẹp màu đỏ... giống hệt bức ảnh trong biệt thự.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Nguyệt! Nguyệt ơi! Em đâu rồi?! Đây là đâu thế này...",
+          "portrait": "Main_HoangMang"
+        },
+        {
+          "speaker": "Cô bé",
+          "text": "(Giật mình bật khóc) Hức... anh ơi... em bị lạc khi chạy lũ... anh đưa em về nhà đi...",
+          "portrait": "CoBe_Khoc"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Cảm ơn em đã trông chừng anh, nhưng anh phải đi tìm vợ anh! (Bỏ đi)",
+          "nextDialogueID": "nhanh_a_hien_thuc",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Nhanh_A_Bo_Mac_Co_Be"
+        },
+        {
+          "choiceText": "Đừng khóc, nín đi anh đưa về nhà rồi anh sẽ đi tìm vợ. (Giúp đỡ)",
+          "nextDialogueID": "nhanh_b_tinh_mong",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Nhanh_B_Giup_Do_Co_Be"
+        }
+      ]
+    },
+    {
+      "dialogueID": "nhanh_a_hien_thuc",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Bạn bỏ mặc cô bé, gượng dậy lê bước đi tìm Vân Nguyệt suốt ngày 6 và ngày 7. Đói khát, kiệt sức, vết thương trên đầu rỉ máu liên tục...]",
+          "portrait": ""
+        },
+        {
+          "speaker": "",
+          "text": "[Ngày 8 - đúng ngày lẽ ra là ngày cưới của hai người. Bạn tìm thấy Vân Nguyệt đang bị đất đá vùi lấp kẹt cứng gần chân đèo...]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "NGUYỆT! Anh tới cứu em đây! Đợi anh, anh sẽ bới đất ra!",
+          "portrait": "Main_SoHai"
+        },
+        {
+          "speaker": "Vân Nguyệt",
+          "text": "(Hơi thở yếu ớt) Đừng... lại gần... chỗ này... nguy hiểm lắm...",
+          "portrait": "VanNguyet_YeuOt"
+        },
+        {
+          "speaker": "",
+          "text": "[Bỗng một mảng sườn đồi sụp xuống! Vân Nguyệt dồn chút sức tàn cuối cùng... đẩy mạnh bạn ra ngoài! Đất đá đổ ập xuống vùi lấp cô ấy. Một hòn đá văng trúng đầu bạn...]",
+          "portrait": ""
+        },
+        {
+          "speaker": "",
+          "text": "Có điều gì đó anh vẫn chưa nhớ ra...",
+          "portrait": ""
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "[Quay lại khoảnh khắc thức tỉnh bên bờ suối...]",
+          "nextDialogueID": "ngay_6_tinh_day",
+          "requiredPuzzleState": "",
+          "setPuzzleState": ""
+        }
+      ]
+    },
+    {
+      "dialogueID": "nhanh_b_tinh_mong",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Bạn dắt tay cô bé đi xuyên qua rừng. Lạ thay, bạn chưa hề giới thiệu, nhưng cô bé lại lên tiếng...]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Cô bé",
+          "text": "Anh {playerName} đừng lo, về đến nhà em sẽ nhờ mọi người đi tìm chị Nguyệt giúp anh.",
+          "portrait": "CoBe_BinhThuong"
+        },
+        {
+          "speaker": "",
+          "text": "[Nhà cô bé có rất nhiều người, nhưng gương mặt ai cũng mờ nhòe. Chỉ trong nửa ngày, họ đã giúp bạn tìm thấy và kéo Vân Nguyệt ra khỏi đống đổ nát trước khi đợt sạt lở thứ hai ập tới.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "",
+          "text": "[Những ngày sau đó thật yên bình. Trời vẫn mưa bão nhưng trên cao lại hiện ra một vầng trăng tròn sáng rõ... Ngày thứ 8, đội cứu hộ tiếp cận được khu vực.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "",
+          "text": "[Xe cấp cứu thứ nhất đưa Vân Nguyệt đi trước. Khi bạn chuẩn bị bước lên chiếc xe thứ hai, cô bé kẹp tóc đỏ tiến lại gần, khẽ thì thầm...]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Cô bé",
+          "text": "Đây có vẻ là ước muốn lớn nhất của anh nhỉ...",
+          "portrait": "CoBe_BinhThuong"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Giật mình tỉnh giấc...",
+          "nextDialogueID": "benh_vien_tinh_giac",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Thuc_Tinh_Benh_Vien"
+        }
+      ]
+    },
+    {
+      "dialogueID": "benh_vien_tinh_giac",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Tiếng còi xe cứu thương réo rắt. Bạn choàng mở mắt. Trần nhà trắng toát. Trong phòng bệnh, cái Hoa - em gái bạn đang gục đầu bên mép giường.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "(Thều thào) Hoa... chị dâu tương lai của em... chị Nguyệt nhập viện cùng anh, giờ đang ở phòng nào? Em ấy ổn chứ?",
+          "portrait": "Main_YeuOt"
+        },
+        {
+          "speaker": "Hoa",
+          "text": "(Òa khóc nức nở) Anh ơi... mấy ngày sau bão cứu hộ mới vào tới nơi... Họ tìm thấy anh ngất gần chỗ chị Nguyệt...",
+          "portrait": "Hoa_Khoc"
+        },
+        {
+          "speaker": "Hoa",
+          "text": "Chị ấy bị đất đá đè, kẹt suốt hai ngày không ăn uống... chị ấy đi rồi anh ơi. Mất đúng vào hôm lẽ ra là ngày cưới của hai người...",
+          "portrait": "Hoa_Khoc"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "(Cười run rẩy) Em đùa anh đúng không? Anh nhờ nhà cô bé... mọi người kéo chị em ra trước khi đất đá lở xuống cơ mà! Lúc này mà em còn đùa anh sao?!",
+          "portrait": "Main_HoangMang"
+        },
+        {
+          "speaker": "Hoa",
+          "text": "Ở đó làm gì có nhà nào anh ơi... Ngoài anh chị ra chỉ có mỗi bà quản gia biệt thự, mà bà ấy cũng mất tích rồi...",
+          "portrait": "Hoa_Khoc"
+        },
+        {
+          "speaker": "",
+          "text": "[Ký ức vụn vỡ ùa về. Bàn tay bới đất. Đôi mắt Vân Nguyệt. Cú đẩy. Không có cô bé nào cả. Giấc mơ vừa rồi... chỉ là thứ đầu óc bạn tự dựng lên vì không thể chấp nhận sự thật... Vân Nguyệt đã chết để cứu bạn.]",
+          "portrait": ""
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "(Gào thét đập phá trong tuyệt vọng)",
+          "nextDialogueID": "epilogue",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Hoan_Thanh_Game"
+        }
+      ]
+    },
+    {
+      "dialogueID": "epilogue",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Ba tháng sau... Bạn xuất viện, được điều trị tâm lý ngoại trú tại nhà. Một đêm rằm, bạn ngồi đơn độc bên cửa sổ ngóng vầng trăng tròn...]",
+          "portrait": ""
+        },
+        {
+          "speaker": "",
+          "text": "[Ở cuối hành lang tăm tối, cô bé cài kẹp tóc đỏ đứng lặng lẽ nhìn bạn...]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Cô bé",
+          "text": "Anh có muốn quay lại không?",
+          "portrait": "CoBe_BinhThuong"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Kết thúc Chapter 1",
+          "nextDialogueID": "post_credit",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Kich_Hoat_Credit"
+        }
+      ]
+    },
+    {
+      "dialogueID": "post_credit",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[CẢNH SAU DANH ĐỀ - Trạm dừng chân Mộng Mơ]",
+          "portrait": ""
+        },
+        {
+          "speaker": "",
+          "text": "[Mây đen lại kéo về trên đỉnh đèo Mệnh Khư. Một cặp đôi trẻ dừng xe hỏi thuê xe máy. Ông lão nhìn họ, chậm rãi nói...]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Ông lão",
+          "text": "Sắp mưa to đó, hai đứa ở lại vài hôm đi...",
+          "portrait": "OngLao_CuoiMaMi"
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

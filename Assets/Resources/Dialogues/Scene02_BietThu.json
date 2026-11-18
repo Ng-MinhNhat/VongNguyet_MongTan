@@ -1,0 +1,104 @@
+{
+  "sequences": [
+    {
+      "dialogueID": "tren_duong_deo",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Hai người chạy xe lên đèo Mệnh Khư. Khung cảnh hai bên khá đẹp, Vân Nguyệt vui vẻ chụp vài tấm ảnh. Chợt có chuông điện thoại...]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Hoa (Điện thoại)",
+          "text": "Anh hai hả? Hai người lên tới nơi chưa? Nhớ về sớm thử áo cưới nha, mẹ dặn đó.",
+          "portrait": "Hoa_DienThoai"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Anh biết rồi, xong chuyến du lịch này anh sẽ về đúng hẹn. Bảo mẹ ở nhà cứ yên tâm nhé.",
+          "portrait": "Main_BinhThuong"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Chạy tiếp lên đoạn giữa đèo",
+          "nextDialogueID": "mat_song",
+          "requiredPuzzleState": "",
+          "setPuzzleState": ""
+        }
+      ]
+    },
+    {
+      "dialogueID": "mat_song",
+      "lines": [
+        {
+          "speaker": "Vân Nguyệt",
+          "text": "Anh ơi... điện thoại em mất sóng rồi. Từ nãy giờ đi, tự nhiên em cứ có linh cảm chẳng lành. Đi tiếp nhỡ có chuyện gì thì sao...",
+          "portrait": "VanNguyet_LoLang"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Em ngốc ghê, lên đèo cao như này sóng điện thoại yếu là bình thường. Hôm nay mình đi chơi mà, vui lên đi em.",
+          "portrait": "Main_TuTin"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Đừng nghe ông già kia hù nữa, ổng dụ mình ở lại trạm để kiếm thêm tiền phòng đấy thôi.",
+          "portrait": "Main_BinhThuong"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Tiếp tục chạy đến chân đồi Mộng Mơ",
+          "nextDialogueID": "gap_quan_gia",
+          "requiredPuzzleState": "",
+          "setPuzzleState": ""
+        }
+      ]
+    },
+    {
+      "dialogueID": "gap_quan_gia",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Đến khu homestay dưới chân đồi, một bà quản gia bước ra mở cổng đón khách.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Cháu chào bà. Dạ bà cho cháu hỏi, cháu thấy trên trang web chỗ mình trông sầm uất đông khách lắm, sao hôm nay vắng vẻ thế ạ?",
+          "portrait": "Main_ThacMac"
+        },
+        {
+          "speaker": "Bà quản gia",
+          "text": "Đây vốn là biệt thự của cô chủ. Cô chủ đi du lịch dài ngày, để lại cho thuê làm chỗ nghỉ cho khách. Mấy tấm ảnh trên mạng là chụp từ hồi trước, lúc chỗ này còn đông vui.",
+          "portrait": "QuanGia_Buon"
+        },
+        {
+          "speaker": "Bà quản gia",
+          "text": "Giờ ít người lên lắm, thời tiết ở đây thất thường, không đẹp như cái tên đâu con. Hai đứa vào cất đồ đi.",
+          "portrait": "QuanGia_BinhThuong"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Nhận phòng",
+          "nextDialogueID": "end_scene",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Da_Den_Homestay"
+        }
+      ]
+    },
+    {
+      "dialogueID": "end_scene",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Hai người xách hành lý vào phòng. Bên ngoài, những đám mây đen nặng trĩu bắt đầu kéo đến, che khuất hoàn toàn vầng trăng...]",
+          "portrait": ""
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "sequences": [
+    {
+      "dialogueID": "tram_dung_chan_start",
+      "lines": [
+        {
+          "speaker": "Ông lão",
+          "text": "Hai đứa định lên đồi Mộng Mơ ngắm trăng à? Nghe lời lão, đường đèo Mệnh Khư dốc lắm. Sắp có mưa to bão lớn, ở lại trạm của lão vài hôm cho qua bão rồi hẵng đi.",
+          "portrait": "OngLao_BinhThuong"
+        },
+        {
+          "speaker": "Vân Nguyệt",
+          "text": "Anh ơi... Hay là mình ở lại đi? Em nhìn trời âm u thế này, linh cảm thấy bất an lắm.",
+          "portrait": "VanNguyet_LoLang"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Bác cứ đùa, dự báo thời tiết báo trời đẹp mà!",
+          "nextDialogueID": "co_chap_1",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Main_Tung_Tu_Choi_Ong_Lao"
+        },
+        {
+          "choiceText": "Trấn an Nguyệt: Đi thôi em, ổng dụ mình ở lại kiếm tiền trọ đấy.",
+          "nextDialogueID": "co_chap_2",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Main_Tung_Tu_Choi_Ong_Lao"
+        }
+      ]
+    },
+    {
+      "dialogueID": "co_chap_1",
+      "lines": [
+        {
+          "speaker": "{playerName}",
+          "text": "Bác cứ đùa, dự báo thời tiết trên mạng báo mấy ngày tới nắng đẹp rực rỡ mà. Tụi cháu thuê xe đi luôn cho kịp giờ!",
+          "portrait": "Main_TuTin"
+        },
+        {
+          "speaker": "Ông lão",
+          "text": "Trời có lúc nắng lúc mưa, mạng người có lúc tỏ lúc mờ... Thôi, muốn đi thì đi đi. Cẩn thận cái mạng.",
+          "portrait": "OngLao_CuoiMaMi"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Lên xe rời đi",
+          "nextDialogueID": "end_scene",
+          "requiredPuzzleState": "",
+          "setPuzzleState": ""
+        }
+      ]
+    },
+    {
+      "dialogueID": "co_chap_2",
+      "lines": [
+        {
+          "speaker": "{playerName}",
+          "text": "(Nói nhỏ với Vân Nguyệt) Em ngốc ghê, hôm nay mình đi chơi mà, vui lên đi. Đừng nghe ông già này hù, ổng dụ mình ở lại trạm để kiếm thêm tiền phòng đấy.",
+          "portrait": "Main_TuTin"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Tụi cháu dắt chiếc xe máy kia nhé bác. Thanh toán tiền thuê xe luôn đây ạ!",
+          "portrait": "Main_BinhThuong"
+        },
+        {
+          "speaker": "Ông lão",
+          "text": "Được thôi... Đi cẩn thận nhé, hai đứa.",
+          "portrait": "OngLao_CuoiMaMi"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Lên xe rời đi",
+          "nextDialogueID": "end_scene",
+          "requiredPuzzleState": "",
+          "setPuzzleState": ""
+        }
+      ]
+    },
+    {
+      "dialogueID": "end_scene",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Khi chiếc xe máy khuất dần sau khúc cua, ông lão đứng lặng dưới chân đèo, khóe môi khẽ nhếch lên một nụ cười kỳ dị...]",
+          "portrait": ""
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

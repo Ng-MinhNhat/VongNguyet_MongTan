@@ -1,0 +1,102 @@
+{
+  "sequences": [
+    {
+      "dialogueID": "cup_dien_bat_ngo",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Đúng như lời ông lão, tối hôm đó mưa bão kéo đến xối xả, sấm chớp liên hồi. Đột nhiên... CỤP! Toàn bộ khu homestay chìm trong bóng tối.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "Vân Nguyệt",
+          "text": "Á! Anh ơi... tối quá, em sợ...",
+          "portrait": "VanNguyet_LoLang"
+        },
+        {
+          "speaker": "Bà quản gia",
+          "text": "Bão lớn quá làm đứt cầu chì rồi. Hai đứa đừng hoảng, để bà thắp đèn cầy lên.",
+          "portrait": "QuanGia_BinhThuong"
+        },
+        {
+          "speaker": "Bà quản gia",
+          "text": "Cậu trai, phòng kho ở cuối hành lang có hộp cầu chì dự phòng. Đây là chìa khóa, cậu xuống đó nối lại cầu chì giúp bà nhé. Bà ở đây trấn an con bé cho.",
+          "portrait": "QuanGia_BinhThuong"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Dạ bà, để cháu đi. Em ở đây với bà, đừng chạy lung tung nhé.",
+          "portrait": "Main_BinhThuong"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Cầm lấy chìa khóa và đi tìm cầu chì",
+          "nextDialogueID": "end_scene_di_tim",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Nhan_Chia_Khoa_Kho"
+        }
+      ]
+    },
+    {
+      "dialogueID": "end_scene_di_tim",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Bạn nhận lấy chiếc chìa khóa lạnh lẽo, bắt đầu mò mẫm bước ra hành lang tối om...]",
+          "portrait": ""
+        }
+      ],
+      "choices": []
+    },
+    {
+      "dialogueID": "tim_thay_bai_bao",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Cầu chì được nối lại, ánh đèn vàng vọt chớp nháy vài cái rồi sáng hẳn lên.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Phù, sáng rồi. May quá...",
+          "portrait": "Main_ThacMac"
+        },
+        {
+          "speaker": "",
+          "text": "[Dưới ánh đèn, bạn chợt chú ý đến một mẩu báo cũ bị cháy xém rơi kẹt ở góc phòng kho.]",
+          "portrait": ""
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "(Đọc thầm) \"... sạt lở nghiêm trọng trên đèo Mệnh Khư... một bé gái tử nạn... đất ở đồi Mộng Mơ có kết cấu rất yếu...\"",
+          "portrait": "Main_LoLang"
+        },
+        {
+          "speaker": "{playerName}",
+          "text": "Đèo Mệnh Khư? Chẳng phải là con đèo mình vừa đi qua sao... Khu biệt thự này rốt cuộc từng xảy ra chuyện gì?",
+          "portrait": "Main_HoangMang"
+        }
+      ],
+      "choices": [
+        {
+          "choiceText": "Cất mẩu báo vào túi và quay lại sảnh",
+          "nextDialogueID": "end_scene_bai_bao",
+          "requiredPuzzleState": "",
+          "setPuzzleState": "Da_Doc_Bai_Bao_Cu"
+        }
+      ]
+    },
+    {
+      "dialogueID": "end_scene_bai_bao",
+      "lines": [
+        {
+          "speaker": "",
+          "text": "[Bạn nhét vội mẩu báo vào túi áo, mang theo một nỗi hoang mang quay trở lại sảnh chính...]",
+          "portrait": ""
+        }
+      ],
+      "choices": []
+    }
+  ]
+}
