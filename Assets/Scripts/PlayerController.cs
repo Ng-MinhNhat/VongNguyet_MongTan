@@ -50,7 +50,7 @@ public class PlayerController : MonoBehaviour
         {
             // Hãm phanh khẩn cấp: Ép vận tốc về 0 để Main không bị trượt đi
             movementInput = Vector2.zero;
-            rb.velocity = Vector2.zero;
+            rb.linearVelocity = Vector2.zero;
             
             // Dừng hoạt ảnh chạy (nếu có)
             if (animator != null)
@@ -92,6 +92,6 @@ public class PlayerController : MonoBehaviour
     private void FixedUpdate()
     {
         // Hàm này chuyên dùng để di chuyển Rigidbody2D cho mượt
-        rb.velocity = movementInput * moveSpeed;
+        rb.linearVelocity = movementInput * moveSpeed;
     }
 }

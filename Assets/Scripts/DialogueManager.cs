@@ -17,6 +17,9 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private Image portraitImage;
     [SerializeField] private GameObject choicesPanel;
 
+    [Tooltip("Kéo đối tượng chứa toàn bộ background khung thoại vào đây")]
+    [SerializeField] private GameObject dialoguePanel;
+
     [Header("Lựa chọn (Choices)")]
     [SerializeField] private Button choiceButtonPrefab;
 
@@ -46,6 +49,10 @@ public class DialogueManager : MonoBehaviour
         Instance = this;
     }
 
+    private void Start()
+    {
+    if (dialoguePanel != null) dialoguePanel.SetActive(false);
+    }
     private void Update()
     {
 #if ENABLE_LEGACY_INPUT_MANAGER
@@ -89,6 +96,8 @@ public class DialogueManager : MonoBehaviour
         currentSequence = found;
         lineIndex = 0;
         IsDialogueActive = true;
+
+        if (dialoguePanel != null) dialoguePanel.SetActive(true);
 
         // [CẤY CODE 1] Bật đèn đỏ: Khóa di chuyển khi bắt đầu hội thoại
         if (GameStateManager.Instance != null)
@@ -251,7 +260,7 @@ public class DialogueManager : MonoBehaviour
         if (dialogueText != null) dialogueText.text = string.Empty;
         if (nameText != null) nameText.text = string.Empty;
         if (portraitImage != null) portraitImage.gameObject.SetActive(false);
-
+        if (dialoguePanel != null) dialoguePanel.SetActive(false);
         // [CẤY CODE 2] Bật đèn xanh: Trả lại quyền điều khiển cho người chơi
         if (GameStateManager.Instance != null)
         {
