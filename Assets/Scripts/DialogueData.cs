@@ -6,6 +6,12 @@ using System.Collections.Generic;
 /// và bổ sung tùy chọn điều khiển sân khấu Visual Novel 2 nhân vật (trái/phải).
 /// </summary>
 [System.Serializable]
+
+public class PuzzleStateCommand
+{
+    public string puzzleId; // Mã định danh duy nhất của câu đố (VD: "Ch1_KetSat_MoKhoa")
+    public string state;    // Trạng thái mới (VD: "KeyDropped", "Solved")
+}
 public class DialogueLine
 {
     public string speaker;
@@ -30,6 +36,7 @@ public class DialogueLine
 
     /// <summary>Nếu true: ẩn toàn bộ nhân vật đứng trên sân khấu ở dòng này (hợp cảnh dẫn chuyện / chuyển cảnh).</summary>
     public bool clearStage;
+    public PuzzleStateCommand setPuzzleState; // Tự động null nếu dòng thoại JSON không có lệnh này
 }
 
 /// <summary>
