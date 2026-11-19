@@ -199,20 +199,22 @@ public class DialogueManager : MonoBehaviour
 
         // 2. Tự động suy diễn từ line.portrait (tương thích 100% với toàn bộ Scene01..06.json)
         string folder = VNCharacterLibrary.GetCharacterFolder(line.portrait);
+        bool isPhoneCall = !string.IsNullOrEmpty(line.speaker)
+                           && line.speaker.IndexOf("Điện thoại", StringComparison.OrdinalIgnoreCase) >= 0;
 
         if (!hasExplicitLeft && folder == "Main" && leftCharacterDisplay != null)
         {
             Sprite full = VNCharacterLibrary.LoadFullBody(line.portrait);
             if (full != null) leftCharacterDisplay.ShowSprite(full);
         }
-        else if (!hasExplicitRight && folder == "VanNguyet" && rightCharacterDisplay != null)
+        else if (!hasExplicitRight && !string.IsNullOrEmpty(folder) && folder != "Main" && !isPhoneCall && rightCharacterDisplay != null)
         {
             Sprite full = VNCharacterLibrary.LoadFullBody(line.portrait);
             if (full != null) rightCharacterDisplay.ShowSprite(full);
         }
 
         // 3. Làm sáng nhân vật đang nói, làm tối nhẹ nhân vật đang nghe
-        ApplySpeakerHighlight(line.activeSide, folder);
+        ApplySpeakerHighlight(line.activeSide, isPhoneCall ? null : folder);
     }
 
     private void ApplySpeakerHighlight(string explicitSide, string portraitFolder)
@@ -221,8 +223,8 @@ public class DialogueManager : MonoBehaviour
         if (string.IsNullOrEmpty(side))
         {
             if (portraitFolder == "Main") side = "left";
-            else if (portraitFolder == "VanNguyet") side = "right";
-            else side = "none"; // Người dẫn chuyện hoặc NPC (Ông lão, Bà quản gia, Hoa, Cô bé)
+            else if (!string.IsNullOrEmpty(portraitFolder)) side = "right";
+            else side = "none"; // Người dẫn chuyện hoặc cuộc gọi điện thoại
         }
 
         bool leftSpeaking = side.Equals("left", StringComparison.OrdinalIgnoreCase)

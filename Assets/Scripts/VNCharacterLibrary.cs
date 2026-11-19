@@ -5,11 +5,10 @@ using UnityEngine;
 namespace VongNguyet.VN
 {
     /// <summary>
-    /// Bộ ánh xạ & nạp Sprite thông minh cho các nhân vật Vọng Nguyệt.
-    /// Tự động dịch cả key tiếng Việt trong JSON (Main_TuTin, VanNguyet_LoLang...)
-    /// lẫn key chuẩn hóa (Main_07_Hollow_Denial, VanNguyet_01_Neutral_Smile...)
-    /// sang đúng ảnh FullBody và Portrait nằm trong Resources/.
-    /// Có cache bộ nhớ và cơ chế fallback an toàn nếu biểu cảm chưa có ảnh.
+    /// Bộ ánh xạ & nạp Sprite thông minh cho toàn bộ 6 nhân vật Vọng Nguyệt (Main, Vân Nguyệt, Ông lão, Bà quản gia, Hoa, Cô bé).
+    /// Tự động dịch cả key tiếng Việt trong JSON (Main_TuTin, VanNguyet_LoLang, OngLao_CuoiMaMi, QuanGia_Buon, Hoa_Khoc, CoBe_Khoc...)
+    /// lẫn key chuẩn hóa sang đúng ảnh FullBody và Portrait nằm trong Resources/.
+    /// Có cache bộ nhớ và cơ chế fallback an toàn.
     /// </summary>
     public static class VNCharacterLibrary
     {
@@ -20,80 +19,109 @@ namespace VongNguyet.VN
         private static readonly Dictionary<string, (string folder, string code)> AliasMap =
             new Dictionary<string, (string, string)>(StringComparer.OrdinalIgnoreCase)
             {
-                // ---- MAIN (Nam chính — 8 biểu cảm) ----
-                { "Main_BinhThuong",     ("Main", "01_Neutral") },
-                { "Main_01_Neutral",     ("Main", "01_Neutral") },
+                // ---- 1. MAIN (Nam chính — 8 biểu cảm) ----
+                { "Main_BinhThuong",         ("Main", "01_Neutral") },
+                { "Main_01_Neutral",         ("Main", "01_Neutral") },
 
-                { "Main_TuTin",          ("Main", "02_Playful_Smile") },
-                { "Main_VuiVe",          ("Main", "02_Playful_Smile") },
-                { "Main_02_Playful_Smile", ("Main", "02_Playful_Smile") },
+                { "Main_TuTin",              ("Main", "02_Playful_Smile") },
+                { "Main_VuiVe",              ("Main", "02_Playful_Smile") },
+                { "Main_02_Playful_Smile",   ("Main", "02_Playful_Smile") },
 
-                { "Main_ThacMac",        ("Main", "03_Serious_Thinking") },
-                { "Main_NghiemTuc",      ("Main", "03_Serious_Thinking") },
+                { "Main_ThacMac",            ("Main", "03_Serious_Thinking") },
+                { "Main_NghiemTuc",          ("Main", "03_Serious_Thinking") },
                 { "Main_03_Serious_Thinking", ("Main", "03_Serious_Thinking") },
 
-                { "Main_HoangMang",      ("Main", "04_Shocked") },
-                { "Main_SoHai",          ("Main", "04_Shocked") },
-                { "Main_04_Shocked",     ("Main", "04_Shocked") },
+                { "Main_HoangMang",          ("Main", "04_Shocked") },
+                { "Main_SoHai",              ("Main", "04_Shocked") },
+                { "Main_04_Shocked",         ("Main", "04_Shocked") },
 
-                { "Main_LoLang",         ("Main", "05_Guilty_Regret") },
-                { "Main_YeuOt",          ("Main", "05_Guilty_Regret") },
-                { "Main_HoiHan",         ("Main", "05_Guilty_Regret") },
-                { "Main_05_Guilty_Regret", ("Main", "05_Guilty_Regret") },
+                { "Main_LoLang",             ("Main", "05_Guilty_Regret") },
+                { "Main_YeuOt",              ("Main", "05_Guilty_Regret") },
+                { "Main_HoiHan",             ("Main", "05_Guilty_Regret") },
+                { "Main_05_Guilty_Regret",   ("Main", "05_Guilty_Regret") },
 
-                { "Main_KienQuyet",      ("Main", "06_Determined") },
-                { "Main_QuyetTam",       ("Main", "06_Determined") },
-                { "Main_06_Determined",  ("Main", "06_Determined") },
+                { "Main_KienQuyet",          ("Main", "06_Determined") },
+                { "Main_QuyetTam",           ("Main", "06_Determined") },
+                { "Main_06_Determined",      ("Main", "06_Determined") },
 
-                { "Main_CuoiRunRay",     ("Main", "07_Hollow_Denial") },
-                { "Main_ChongChe",       ("Main", "07_Hollow_Denial") },
-                { "Main_07_Hollow_Denial", ("Main", "07_Hollow_Denial") },
+                { "Main_CuoiRunRay",         ("Main", "07_Hollow_Denial") },
+                { "Main_ChongChe",           ("Main", "07_Hollow_Denial") },
+                { "Main_07_Hollow_Denial",   ("Main", "07_Hollow_Denial") },
 
-                { "Main_TuyetVong",      ("Main", "08_Broken_Despair") },
-                { "Main_Khoc",           ("Main", "08_Broken_Despair") },
-                { "Main_08_Broken_Despair", ("Main", "08_Broken_Despair") },
+                { "Main_TuyetVong",          ("Main", "08_Broken_Despair") },
+                { "Main_Khoc",               ("Main", "08_Broken_Despair") },
+                { "Main_08_Broken_Despair",  ("Main", "08_Broken_Despair") },
 
-                // ---- VÂN NGUYỆT (Nữ chính tóc dài — 8 biểu cảm) ----
-                { "VanNguyet_BinhThuong",     ("VanNguyet", "01_Neutral_Smile") },
-                { "VanNguyet_01_Neutral_Smile", ("VanNguyet", "01_Neutral_Smile") },
+                // ---- 2. VÂN NGUYỆT (Nữ chính tóc dài — 8 biểu cảm) ----
+                { "VanNguyet_BinhThuong",        ("VanNguyet", "01_Neutral_Smile") },
+                { "VanNguyet_01_Neutral_Smile",  ("VanNguyet", "01_Neutral_Smile") },
 
-                { "VanNguyet_Vui",            ("VanNguyet", "02_Happy") },
-                { "VanNguyet_HanhPhuc",       ("VanNguyet", "02_Happy") },
-                { "VanNguyet_02_Happy",       ("VanNguyet", "02_Happy") },
+                { "VanNguyet_Vui",               ("VanNguyet", "02_Happy") },
+                { "VanNguyet_HanhPhuc",          ("VanNguyet", "02_Happy") },
+                { "VanNguyet_02_Happy",          ("VanNguyet", "02_Happy") },
 
-                { "VanNguyet_LoLang",         ("VanNguyet", "03_Uneasy") },
-                { "VanNguyet_BatAn",          ("VanNguyet", "03_Uneasy") },
-                { "VanNguyet_03_Uneasy",      ("VanNguyet", "03_Uneasy") },
+                { "VanNguyet_LoLang",            ("VanNguyet", "03_Uneasy") },
+                { "VanNguyet_BatAn",             ("VanNguyet", "03_Uneasy") },
+                { "VanNguyet_03_Uneasy",         ("VanNguyet", "03_Uneasy") },
 
-                { "VanNguyet_SoHai",          ("VanNguyet", "04_Scared") },
-                { "VanNguyet_04_Scared",      ("VanNguyet", "04_Scared") },
+                { "VanNguyet_SoHai",             ("VanNguyet", "04_Scared") },
+                { "VanNguyet_04_Scared",         ("VanNguyet", "04_Scared") },
 
-                { "VanNguyet_YeuOt",          ("VanNguyet", "05_Sick_Weak") },
-                { "VanNguyet_Sot",            ("VanNguyet", "05_Sick_Weak") },
-                { "VanNguyet_05_Sick_Weak",   ("VanNguyet", "05_Sick_Weak") },
+                { "VanNguyet_YeuOt",             ("VanNguyet", "05_Sick_Weak") },
+                { "VanNguyet_Sot",               ("VanNguyet", "05_Sick_Weak") },
+                { "VanNguyet_05_Sick_Weak",      ("VanNguyet", "05_Sick_Weak") },
 
-                { "VanNguyet_Khoc",           ("VanNguyet", "06_Crying_Blame") },
-                { "VanNguyet_06_Crying_Blame", ("VanNguyet", "06_Crying_Blame") },
+                { "VanNguyet_Khoc",              ("VanNguyet", "06_Crying_Blame") },
+                { "VanNguyet_06_Crying_Blame",   ("VanNguyet", "06_Crying_Blame") },
 
-                { "VanNguyet_ThaThu",         ("VanNguyet", "07_Gentle_Forgive") },
+                { "VanNguyet_ThaThu",            ("VanNguyet", "07_Gentle_Forgive") },
                 { "VanNguyet_07_Gentle_Forgive", ("VanNguyet", "07_Gentle_Forgive") },
 
-                { "VanNguyet_KienQuyet",      ("VanNguyet", "08_Determined_Urgent") },
-                { "VanNguyet_08_Determined_Urgent", ("VanNguyet", "08_Determined_Urgent") }
+                { "VanNguyet_KienQuyet",         ("VanNguyet", "08_Determined_Urgent") },
+                { "VanNguyet_08_Determined_Urgent", ("VanNguyet", "08_Determined_Urgent") },
+
+                // ---- 3. ÔNG LÃO TRẠM DỪNG CHÂN (2 biểu cảm) ----
+                { "OngLao_BinhThuong",       ("OngLao", "01_BinhThuong") },
+                { "OngLao_01_BinhThuong",    ("OngLao", "01_BinhThuong") },
+                { "OngLao_CuoiMaMi",         ("OngLao", "02_CuoiMaMi") },
+                { "OngLao_02_CuoiMaMi",      ("OngLao", "02_CuoiMaMi") },
+
+                // ---- 4. BÀ QUẢN GIA (2 biểu cảm) ----
+                { "QuanGia_BinhThuong",      ("QuanGia", "01_BinhThuong") },
+                { "QuanGia_01_BinhThuong",   ("QuanGia", "01_BinhThuong") },
+                { "QuanGia_Buon",            ("QuanGia", "02_Buon") },
+                { "QuanGia_02_Buon",         ("QuanGia", "02_Buon") },
+
+                // ---- 5. HOA — EM GÁI MAIN (2 biểu cảm) ----
+                { "Hoa_DienThoai",           ("Hoa", "01_DienThoai") },
+                { "Hoa_BinhThuong",          ("Hoa", "01_DienThoai") },
+                { "Hoa_01_DienThoai",        ("Hoa", "01_DienThoai") },
+                { "Hoa_Khoc",                ("Hoa", "02_Khoc") },
+                { "Hoa_02_Khoc",             ("Hoa", "02_Khoc") },
+
+                // ---- 6. CÔ BÉ CÀI KẸP TÓC ĐỎ (2 biểu cảm) ----
+                { "CoBe_BinhThuong",         ("CoBe", "01_BinhThuong") },
+                { "CoBe_01_BinhThuong",      ("CoBe", "01_BinhThuong") },
+                { "CoBe_Khoc",               ("CoBe", "02_Khoc") },
+                { "CoBe_02_Khoc",            ("CoBe", "02_Khoc") }
             };
 
         private static readonly Dictionary<string, string> DefaultBaseCode =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                { "Main", "01_Neutral" },
-                { "VanNguyet", "01_Neutral_Smile" }
+                { "Main",      "01_Neutral" },
+                { "VanNguyet", "01_Neutral_Smile" },
+                { "OngLao",    "01_BinhThuong" },
+                { "QuanGia",   "01_BinhThuong" },
+                { "Hoa",       "01_DienThoai" },
+                { "CoBe",      "01_BinhThuong" }
             };
 
         private static readonly Dictionary<string, Sprite> FullBodyCache = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
         private static readonly Dictionary<string, Sprite> PortraitCache = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Kiểm tra một key portrait thuộc nhân vật chính nào ("Main", "VanNguyet", hoặc null nếu là nhân vật phụ).
+        /// Kiểm tra một key portrait thuộc nhân vật nào ("Main", "VanNguyet", "OngLao", "QuanGia", "Hoa", "CoBe", hoặc null).
         /// </summary>
         public static string GetCharacterFolder(string key)
         {
@@ -105,13 +133,16 @@ namespace VongNguyet.VN
                 return mapped.folder;
             }
 
-            if (trimmed.StartsWith("Main_", StringComparison.OrdinalIgnoreCase)) return "Main";
-            if (trimmed.StartsWith("VanNguyet_", StringComparison.OrdinalIgnoreCase)) return "VanNguyet";
+            foreach (string folder in DefaultBaseCode.Keys)
+            {
+                if (trimmed.StartsWith(folder + "_", StringComparison.OrdinalIgnoreCase))
+                    return folder;
+            }
             return null;
         }
 
         /// <summary>
-        /// Nạp Sprite toàn thân (FullBody) cho sân khấu Visual Novel.
+        /// Nạp Sprite toàn thân (FullBody 900x1400) cho sân khấu Visual Novel.
         /// Nếu biểu cảm cụ thể chưa tồn tại trong Resources/, tự động fallback về bản Base của nhân vật đó.
         /// </summary>
         public static Sprite LoadFullBody(string key)
@@ -153,7 +184,7 @@ namespace VongNguyet.VN
         /// Hỗ trợ đồng thời:
         /// 1. Resources/Characters/{Character}/Portraits/{Character}_Portrait_{Code}
         /// 2. Fallback về Portrait Base nếu biểu cảm chưa có ảnh
-        /// 3. Resources/Portraits/{rawKey} (cho nhân vật phụ: OngLao_*, Hoa_*, QuanGia_*, CoBe_*)
+        /// 3. Resources/Portraits/{rawKey}
         /// </summary>
         public static Sprite LoadPortrait(string key)
         {
@@ -173,7 +204,6 @@ namespace VongNguyet.VN
                 }
             }
 
-            // Thử trực tiếp thư mục cũ Resources/Portraits/{key} (cho NPC hoặc ảnh đặt thủ công)
             if (sprite == null)
             {
                 sprite = Resources.Load<Sprite>(LegacyPortraitsRoot + trimmed);
