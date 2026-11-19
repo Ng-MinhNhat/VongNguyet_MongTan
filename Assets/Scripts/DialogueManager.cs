@@ -1,15 +1,23 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using VongNguyet.VN;
 
 /// <summary>
-/// Điều khiển hội thoại đọc từ JSON (Singleton).
-/// Gắn các nút "tiếp tục" của UI vào <see cref="AdvanceDialogue"/>.
+/// Điều khiển hội thoại Visual Novel đọc từ JSON (Singleton).
+/// Tương thích 100% với cấu trúc JSON hiện tại (Scene01..Scene06) và tự động tích hợp
+/// sân khấu nhân vật đứng toàn thân (Main bên trái, Vân Nguyệt bên phải) kèm chuyển biểu cảm mượt.
 /// </summary>
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance { get; private set; }
+
+    // Sự kiện để các hệ thống khác (Audio, Camera, Cutscene, Quest...) lắng nghe
+    public event Action<string> OnDialogueStarted;
+    public event Action OnDialogueEnded;
 
     [Header("Giao diện hội thoại (UI)")]
     [SerializeField] private TMP_Text nameText;
@@ -20,6 +28,16 @@ public class DialogueManager : MonoBehaviour
     [Tooltip("Kéo đối tượng chứa toàn bộ background khung thoại vào đây")]
     [SerializeField] private GameObject dialoguePanel;
 
+    [Header("Sân khấu Nhân vật Visual Novel (Tùy chọn)")]
+    [Tooltip("Kéo VNCharacterDisplay vị trí Trái (mặc định hiển thị Main)")]
+    [SerializeField] private VNCharacterDisplay leftCharacterDisplay;
+
+    [Tooltip("Kéo VNCharacterDisplay vị trí Phải (mặc định hiển thị Vân Nguyệt)")]
+    [SerializeField] private VNCharacterDisplay rightCharacterDisplay;
+
+    [Tooltip("Đối tượng cha chứa cả 2 nhân vật đứng (tự bật/tắt khi vào/thoát hội thoại nếu có gán)")]
+    [SerializeField] private GameObject stageRoot;
+
     [Header("Lựa chọn (Choices)")]
     [SerializeField] private Button choiceButtonPrefab;
 
@@ -27,7 +45,6 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private float typeSpeed = 0.03f;
 
     private const string PlayerNameToken = "{playerName}";
-    private const string PortraitResourceFolder = "Portraits/";
 
     private DialogueDatabase database;
     private DialogueSequence currentSequence;
@@ -35,6 +52,7 @@ public class DialogueManager : MonoBehaviour
     private Coroutine typingCoroutine;
     private bool isTyping;
     private string fullLineText;
+    private int dialogueStartedFrame = -1;
 
     public bool IsDialogueActive { get; private set; }
 
@@ -51,12 +69,21 @@ public class DialogueManager : MonoBehaviour
 
     private void Start()
     {
-    if (dialoguePanel != null) dialoguePanel.SetActive(false);
+        if (dialoguePanel != null) dialoguePanel.SetActive(false);
+        if (stageRoot != null) stageRoot.SetActive(false);
+        if (leftCharacterDisplay != null) leftCharacterDisplay.Hide(0f);
+        if (rightCharacterDisplay != null) rightCharacterDisplay.Hide(0f);
     }
+
     private void Update()
     {
 #if ENABLE_LEGACY_INPUT_MANAGER
-        if (IsDialogueActive && Input.GetMouseButtonDown(0))
+        if (!IsDialogueActive) return;
+
+        // Tránh lỡ skip dòng đầu tiên ở đúng frame vừa bấm mở hội thoại
+        if (Time.frameCount == dialogueStartedFrame) return;
+
+        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
         {
             AdvanceDialogue();
         }
@@ -80,6 +107,10 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
+        // Xóa sân khấu cũ trước khi mở cuộc hội thoại mới
+        if (leftCharacterDisplay != null) leftCharacterDisplay.Hide(0f);
+        if (rightCharacterDisplay != null) rightCharacterDisplay.Hide(0f);
+
         PlaySequence(sequenceID);
     }
 
@@ -96,16 +127,20 @@ public class DialogueManager : MonoBehaviour
         currentSequence = found;
         lineIndex = 0;
         IsDialogueActive = true;
+        dialogueStartedFrame = Time.frameCount;
 
         if (dialoguePanel != null) dialoguePanel.SetActive(true);
+        if (stageRoot != null) stageRoot.SetActive(true);
 
-        // [CẤY CODE 1] Bật đèn đỏ: Khóa di chuyển khi bắt đầu hội thoại
+        // Khóa di chuyển khi bắt đầu hội thoại
         if (GameStateManager.Instance != null)
         {
             GameStateManager.Instance.ChangeState(GameState.Cutscene);
         }
 
         if (choicesPanel != null) choicesPanel.SetActive(false);
+
+        OnDialogueStarted?.Invoke(sequenceID);
 
         if (currentSequence.lines == null || currentSequence.lines.Count == 0)
         {
@@ -116,17 +151,87 @@ public class DialogueManager : MonoBehaviour
         ShowLine(currentSequence.lines[lineIndex]);
     }
 
-    // ---------------- Hiển thị dòng thoại ----------------
+    // ---------------- Hiển thị dòng thoại & sân khấu ----------------
 
     private void ShowLine(DialogueLine line)
     {
         if (nameText != null) nameText.text = ReplacePlayerName(line.speaker);
+
         SetPortrait(line.portrait);
+        UpdateVisualNovelStage(line);
 
         fullLineText = ReplacePlayerName(line.text);
 
         if (typingCoroutine != null) StopCoroutine(typingCoroutine);
         typingCoroutine = StartCoroutine(TypeText(fullLineText));
+    }
+
+    private void UpdateVisualNovelStage(DialogueLine line)
+    {
+        if (leftCharacterDisplay == null && rightCharacterDisplay == null) return;
+
+        if (line.clearStage)
+        {
+            if (leftCharacterDisplay != null) leftCharacterDisplay.Hide();
+            if (rightCharacterDisplay != null) rightCharacterDisplay.Hide();
+            return;
+        }
+
+        bool hasExplicitLeft = !string.IsNullOrEmpty(line.leftCharacter);
+        bool hasExplicitRight = !string.IsNullOrEmpty(line.rightCharacter);
+
+        // 1. Xử lý chỉ định thủ công từ JSON (nếu có)
+        if (hasExplicitLeft && leftCharacterDisplay != null)
+        {
+            if (line.leftCharacter.Equals("hide", StringComparison.OrdinalIgnoreCase))
+                leftCharacterDisplay.Hide();
+            else
+                leftCharacterDisplay.ShowSprite(VNCharacterLibrary.LoadFullBody(line.leftCharacter));
+        }
+
+        if (hasExplicitRight && rightCharacterDisplay != null)
+        {
+            if (line.rightCharacter.Equals("hide", StringComparison.OrdinalIgnoreCase))
+                rightCharacterDisplay.Hide();
+            else
+                rightCharacterDisplay.ShowSprite(VNCharacterLibrary.LoadFullBody(line.rightCharacter));
+        }
+
+        // 2. Tự động suy diễn từ line.portrait (tương thích 100% với toàn bộ Scene01..06.json)
+        string folder = VNCharacterLibrary.GetCharacterFolder(line.portrait);
+
+        if (!hasExplicitLeft && folder == "Main" && leftCharacterDisplay != null)
+        {
+            Sprite full = VNCharacterLibrary.LoadFullBody(line.portrait);
+            if (full != null) leftCharacterDisplay.ShowSprite(full);
+        }
+        else if (!hasExplicitRight && folder == "VanNguyet" && rightCharacterDisplay != null)
+        {
+            Sprite full = VNCharacterLibrary.LoadFullBody(line.portrait);
+            if (full != null) rightCharacterDisplay.ShowSprite(full);
+        }
+
+        // 3. Làm sáng nhân vật đang nói, làm tối nhẹ nhân vật đang nghe
+        ApplySpeakerHighlight(line.activeSide, folder);
+    }
+
+    private void ApplySpeakerHighlight(string explicitSide, string portraitFolder)
+    {
+        string side = explicitSide;
+        if (string.IsNullOrEmpty(side))
+        {
+            if (portraitFolder == "Main") side = "left";
+            else if (portraitFolder == "VanNguyet") side = "right";
+            else side = "none"; // Người dẫn chuyện hoặc NPC (Ông lão, Bà quản gia, Hoa, Cô bé)
+        }
+
+        bool leftSpeaking = side.Equals("left", StringComparison.OrdinalIgnoreCase)
+                            || side.Equals("both", StringComparison.OrdinalIgnoreCase);
+        bool rightSpeaking = side.Equals("right", StringComparison.OrdinalIgnoreCase)
+                             || side.Equals("both", StringComparison.OrdinalIgnoreCase);
+
+        if (leftCharacterDisplay != null) leftCharacterDisplay.SetSpeaking(leftSpeaking);
+        if (rightCharacterDisplay != null) rightCharacterDisplay.SetSpeaking(rightSpeaking);
     }
 
     private IEnumerator TypeText(string text)
@@ -191,7 +296,7 @@ public class DialogueManager : MonoBehaviour
         if (choicesPanel == null || choiceButtonPrefab == null
             || currentSequence.choices == null || currentSequence.choices.Count == 0)
         {
-            EndDialogue();
+            FinishCurrentSequenceAndEnd();
             return;
         }
 
@@ -221,7 +326,7 @@ public class DialogueManager : MonoBehaviour
 
         if (shown == 0)
         {
-            EndDialogue();
+            FinishCurrentSequenceAndEnd();
             return;
         }
 
@@ -230,7 +335,6 @@ public class DialogueManager : MonoBehaviour
 
     private void OnChoiceSelected(DialogueChoice choice)
     {
-        // [CẤY CODE 3] Báo cho GameStateManager kích hoạt cờ sự kiện và phát sóng Event
         if (!string.IsNullOrEmpty(choice.setPuzzleState) && GameStateManager.Instance != null)
         {
             GameStateManager.Instance.TriggerPuzzleState(choice.setPuzzleState);
@@ -240,11 +344,29 @@ public class DialogueManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(choice.nextDialogueID))
         {
-            EndDialogue();
+            FinishCurrentSequenceAndEnd();
         }
         else
         {
             PlaySequence(choice.nextDialogueID);
+        }
+    }
+
+    private void FinishCurrentSequenceAndEnd()
+    {
+        string endState = currentSequence != null ? currentSequence.setPuzzleStateOnEnd : null;
+        string nextScene = currentSequence != null ? currentSequence.nextSceneName : null;
+
+        if (!string.IsNullOrEmpty(endState) && GameStateManager.Instance != null)
+        {
+            GameStateManager.Instance.TriggerPuzzleState(endState);
+        }
+
+        EndDialogue();
+
+        if (!string.IsNullOrEmpty(nextScene))
+        {
+            SceneManager.LoadScene(nextScene);
         }
     }
 
@@ -260,12 +382,18 @@ public class DialogueManager : MonoBehaviour
         if (dialogueText != null) dialogueText.text = string.Empty;
         if (nameText != null) nameText.text = string.Empty;
         if (portraitImage != null) portraitImage.gameObject.SetActive(false);
+        if (leftCharacterDisplay != null) leftCharacterDisplay.Hide(0f);
+        if (rightCharacterDisplay != null) rightCharacterDisplay.Hide(0f);
+        if (stageRoot != null) stageRoot.SetActive(false);
         if (dialoguePanel != null) dialoguePanel.SetActive(false);
-        // [CẤY CODE 2] Bật đèn xanh: Trả lại quyền điều khiển cho người chơi
+
+        // Trả lại quyền điều khiển cho người chơi
         if (GameStateManager.Instance != null)
         {
             GameStateManager.Instance.ChangeState(GameState.FreeRoam);
         }
+
+        OnDialogueEnded?.Invoke();
     }
 
     // ---------------- Tiện ích ----------------
@@ -293,15 +421,16 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
-        Sprite sprite = Resources.Load<Sprite>(PortraitResourceFolder + portraitName);
+        Sprite sprite = VNCharacterLibrary.LoadPortrait(portraitName);
         if (sprite == null)
         {
-            Debug.LogWarning($"[DialogueManager] Không tìm thấy portrait: Resources/{PortraitResourceFolder}{portraitName}");
+            Debug.LogWarning($"[DialogueManager] Không tìm thấy portrait cho key '{portraitName}'.");
             portraitImage.gameObject.SetActive(false);
             return;
         }
 
         portraitImage.sprite = sprite;
+        portraitImage.preserveAspect = true;
         portraitImage.gameObject.SetActive(true);
     }
 }

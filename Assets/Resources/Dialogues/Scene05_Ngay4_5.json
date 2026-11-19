@@ -55,12 +55,12 @@
         {
           "speaker": "Vân Nguyệt",
           "text": "Qua được chuyện này... mình về rồi cưới nhau, nha.",
-          "portrait": "VanNguyet_BinhThuong"
+          "portrait": "VanNguyet_ThaThu"
         },
         {
           "speaker": "{playerName}",
           "text": "Ừ, anh hứa! Ngày mai trời tạnh, anh sẽ cõng em thoát khỏi đây.",
-          "portrait": "Main_BinhThuong"
+          "portrait": "Main_KienQuyet"
         }
       ],
       "choices": [
@@ -119,7 +119,7 @@
         {
           "speaker": "{playerName}",
           "text": "KHÔNG! NGUYỆT ƠI! Đưa tay cho anh!",
-          "portrait": "Main_SoHai"
+          "portrait": "Main_TuyetVong"
         },
         {
           "speaker": "",

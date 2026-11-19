@@ -50,7 +50,7 @@
         {
           "speaker": "{playerName}",
           "text": "NGUYỆT! Anh tới cứu em đây! Đợi anh, anh sẽ bới đất ra!",
-          "portrait": "Main_SoHai"
+          "portrait": "Main_KienQuyet"
         },
         {
           "speaker": "Vân Nguyệt",
@@ -146,7 +146,7 @@
         {
           "speaker": "{playerName}",
           "text": "(Cười run rẩy) Em đùa anh đúng không? Anh nhờ nhà cô bé... mọi người kéo chị em ra trước khi đất đá lở xuống cơ mà! Lúc này mà em còn đùa anh sao?!",
-          "portrait": "Main_HoangMang"
+          "portrait": "Main_CuoiRunRay"
         },
         {
           "speaker": "Hoa",

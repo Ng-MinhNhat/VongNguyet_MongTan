@@ -2,14 +2,34 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Một dòng thoại. Hỗ trợ placeholder "{playerName}" trong speaker/text.
+/// Giữ tương thích 100% với các file JSON cũ (chỉ dùng speaker, text, portrait)
+/// và bổ sung tùy chọn điều khiển sân khấu Visual Novel 2 nhân vật (trái/phải).
 /// </summary>
 [System.Serializable]
 public class DialogueLine
 {
     public string speaker;
     public string text;
-    /// <summary>Tên sprite nằm trong Resources/Portraits/ (để trống = ẩn chân dung).</summary>
+
+    /// <summary>
+    /// Key chân dung / biểu cảm (VD: "Main_TuTin", "Main_CuoiRunRay", "VanNguyet_LoLang", "OngLao_CuoiMaMi"...).
+    /// Để trống = ẩn chân dung hộp thoại.
+    /// </summary>
     public string portrait;
+
+    // ---- Tùy chọn mở rộng cho sân khấu Visual Novel (để trống = tự động suy diễn từ portrait/speaker) ----
+
+    /// <summary>Ép hiển thị biểu cảm cụ thể ở vị trí trái (VD: "Main_01_Neutral" hoặc "hide" để ẩn).</summary>
+    public string leftCharacter;
+
+    /// <summary>Ép hiển thị biểu cảm cụ thể ở vị trí phải (VD: "VanNguyet_01_Neutral_Smile" hoặc "hide" để ẩn).</summary>
+    public string rightCharacter;
+
+    /// <summary>Tùy chọn làm sáng bên nói: "left", "right", "both", "none" (để trống = tự động).</summary>
+    public string activeSide;
+
+    /// <summary>Nếu true: ẩn toàn bộ nhân vật đứng trên sân khấu ở dòng này (hợp cảnh dẫn chuyện / chuyển cảnh).</summary>
+    public bool clearStage;
 }
 
 /// <summary>
@@ -36,6 +56,12 @@ public class DialogueSequence
     public string dialogueID;
     public List<DialogueLine> lines = new List<DialogueLine>();
     public List<DialogueChoice> choices = new List<DialogueChoice>();
+
+    /// <summary>Tùy chọn: tự động kích hoạt cờ cốt truyện khi kết thúc sequence (nếu không có choice).</summary>
+    public string setPuzzleStateOnEnd;
+
+    /// <summary>Tùy chọn: tên scene chuyển tới sau khi kết thúc sequence (nếu để trống thì giữ nguyên scene).</summary>
+    public string nextSceneName;
 }
 
 /// <summary>
@@ -46,4 +72,3 @@ public class DialogueDatabase
 {
     public List<DialogueSequence> sequences = new List<DialogueSequence>();
 }
-

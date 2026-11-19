@@ -11,7 +11,8 @@ public class PlayerController : MonoBehaviour
     private Animator animator;
 
     // Biến kiểm soát: true = được đi, false = đứng im nghe thoại
-    private bool canMove = true; 
+    private bool canMove = true;
+    private bool isSubscribed = false;
 
     private void Awake()
     {
@@ -23,20 +24,32 @@ public class PlayerController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (GameStateManager.Instance != null)
-        {
-            // Bắt đầu dóng tai nghe lệnh từ GameStateManager
-            GameStateManager.Instance.OnGameStateChanged += HandleGameStateChanged;
-        }
+        TrySubscribeGameState();
+    }
+
+    private void Start()
+    {
+        // Đảm bảo đăng ký được cả khi PlayerController.OnEnable chạy trước GameStateManager.Awake
+        TrySubscribeGameState();
+    }
+
+    private void TrySubscribeGameState()
+    {
+        if (isSubscribed || GameStateManager.Instance == null) return;
+
+        GameStateManager.Instance.OnGameStateChanged += HandleGameStateChanged;
+        isSubscribed = true;
+        HandleGameStateChanged(GameStateManager.Instance.CurrentState);
     }
 
     private void OnDisable()
     {
-        if (GameStateManager.Instance != null)
+        if (isSubscribed && GameStateManager.Instance != null)
         {
             // Hủy nghe lệnh khi tắt/chuyển scene để chống tràn bộ nhớ (Memory Leak)
             GameStateManager.Instance.OnGameStateChanged -= HandleGameStateChanged;
         }
+        isSubscribed = false;
     }
 
     // ================= XỬ LÝ KHÓA CHÂN =================
