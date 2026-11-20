@@ -38,4 +38,3 @@ public class GameSaveData
     public List<string> inventoryItems = new List<string>();
     public List<PuzzleState> puzzleStates = new List<PuzzleState>();
 }
-

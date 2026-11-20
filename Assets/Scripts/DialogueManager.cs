@@ -144,6 +144,7 @@ public class DialogueManager : MonoBehaviour
 
         if (currentSequence.lines == null || currentSequence.lines.Count == 0)
         {
+            Debug.LogWarning($"[DialogueManager] Sequence '{sequenceID}' có 0 dòng thoại (lines rỗng). Kiểm tra lại file JSON hoặc [System.Serializable] trong DialogueData.cs!");
             ShowChoicesOrEnd();
             return;
         }
@@ -159,11 +160,28 @@ public class DialogueManager : MonoBehaviour
 
         SetPortrait(line.portrait);
         UpdateVisualNovelStage(line);
+        TryExecuteLinePuzzleState(line);
 
         fullLineText = ReplacePlayerName(line.text);
 
         if (typingCoroutine != null) StopCoroutine(typingCoroutine);
         typingCoroutine = StartCoroutine(TypeText(fullLineText));
+    }
+    // Tách riêng hàm theo nguyên tắc SRP (Đơn trách nhiệm)
+    private void TryExecuteLinePuzzleState(DialogueLine line)
+    {
+        // Lưu ý Edge Case: JsonUtility của Unity vẫn tự khởi tạo object rỗng dù JSON không khai báo field này,
+        // nên bắt buộc phải kiểm tra IsNullOrEmpty cho cả puzzleId và state.
+        if (line?.setPuzzleState == null || GameStateManager.Instance == null) return;
+
+        if (!string.IsNullOrEmpty(line.setPuzzleState.puzzleId) &&
+            !string.IsNullOrEmpty(line.setPuzzleState.state))
+        {
+            GameStateManager.Instance.SetPuzzleState(
+                line.setPuzzleState.puzzleId,
+                line.setPuzzleState.state
+            );
+        }
     }
 
     private void UpdateVisualNovelStage(DialogueLine line)
@@ -250,13 +268,14 @@ public class DialogueManager : MonoBehaviour
 
         dialogueText.ForceMeshUpdate();
         int total = dialogueText.textInfo.characterCount;
+        // Khởi tạo 1 lần trước vòng lặp for trong hàm TypeText để tái sử dụng, tránh sinh rác GC
+        WaitForSeconds charDelay = new WaitForSeconds(typeSpeed);
 
         for (int i = 0; i <= total; i++)
         {
             dialogueText.maxVisibleCharacters = i;
-            yield return new WaitForSeconds(typeSpeed);
+            yield return charDelay; // Dùng lại biến đã cache thay vì gọi "new" liên tục
         }
-
         FinishTyping();
     }
 

@@ -1694,6 +1694,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1609077945}
   - component: {fileID: 1609077944}
+  - component: {fileID: 1609077946}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1728,6 +1729,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1609077946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1609077943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 152bbaade8546ea4a8996ca6302b86c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
+  itemDatabase:
+  - {fileID: 11400000, guid: 0719ff939cdef6946b4a4b7320e08550, type: 2}
 --- !u!1 &1637210488
 GameObject:
   m_ObjectHideFlags: 0
@@ -1806,7 +1821,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d999fd631873ca4081df5f0a8b04981, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  moveSpeed: 100
+  moveSpeed: 500
 --- !u!50 &1637210491
 Rigidbody2D:
   serializedVersion: 5

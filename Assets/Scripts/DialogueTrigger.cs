@@ -20,13 +20,24 @@ public class DialogueTrigger : MonoBehaviour
     private void Update()
     {
         // Nếu người chơi đang ở gần, bấm phím E, và hệ thống thoại đang không bận rộn thì bật thoại
-        if (isPlayerInRange && Input.GetKeyDown(interactKey))
+       if (!isPlayerInRange || !Input.GetKeyDown(interactKey)) return;
+
+        // Trường hợp 1: Đối tượng DialogueManager trong Scene chưa gắn script hoặc đang bị tắt (Inactive)
+        if (DialogueManager.Instance == null)
         {
-            if (DialogueManager.Instance != null && !DialogueManager.Instance.IsDialogueActive)
-            {
-                PlayDialogue();
-            }
+            Debug.LogError("[DialogueTrigger] LỖI: DialogueManager.Instance đang bị NULL! Hãy kiểm tra đối tượng DialogueManager trong Hierarchy.");
+            return;
         }
+
+        // Trường hợp 2: Hệ thống đang bị kẹt ở trạng thái đang mở hội thoại
+        if (DialogueManager.Instance.IsDialogueActive)
+        {
+            Debug.LogWarning("[DialogueTrigger] Bị chặn vì DialogueManager.IsDialogueActive đang là TRUE.");
+            return;
+        }
+
+        Debug.Log($"[DialogueTrigger] Đã nhận phím '{interactKey}' -> Gọi hội thoại: {sequenceID}");
+        PlayDialogue();
     }
 
     // Bắt sự kiện khi có vật thể chạm vào vùng Trigger

@@ -1,0 +1,19 @@
+{
+  "sequences": [
+    {
+      "dialogueID": "KetSat_MoDau",
+      "lines": [
+        {
+          "speaker": "{playerName}",
+          "text": "Chiếc két sắt cũ này bị kẹt rồi... nhưng phía dưới gầm hình như có thứ gì đó vừa rơi ra.",
+          "portrait": "Main_TuTin",
+          "setPuzzleState": {
+            "puzzleId": "Ch1_KetSat_MoKhoa",
+            "state": "KeyDropped"
+          }
+        }
+      ],
+      "choices": []
+    }
+  ]
+}

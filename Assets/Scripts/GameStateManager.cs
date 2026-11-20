@@ -173,4 +173,47 @@ public class GameStateManager : MonoBehaviour
             Debug.LogError($"[GameStateManager] Tải game thất bại: {e.Message}");
         }
     }
+    // ================= CÂU ĐỐ ĐA TRẠNG THÁI & VẬT THỂ ĐÃ NHẶT =================
+
+    // Lưu trạng thái câu đố nhiều giai đoạn: Key = puzzleId, Value = state (VD: "KeyDropped", "Solved")
+    private readonly Dictionary<string, string> _puzzleStages = new Dictionary<string, string>();
+
+    // Lưu ID các vật thể đã nhặt để chặn lỗi hồi sinh vật phẩm (Item Respawn) khi tải lại Scene
+    private readonly HashSet<string> _consumedObjectIds = new HashSet<string>();
+
+    // Sự kiện (Event) phát sóng cho các vật thể ngoài bản đồ tự lắng nghe mà không cần Update()
+    public event Action<string, string> OnPuzzleStateChanged;
+
+    /// <summary>Cập nhật trạng thái câu đố dạng chuỗi (Overload - Nạp chồng của bản bool cũ).</summary>
+    public void SetPuzzleState(string puzzleId, string newState)
+    {
+        if (string.IsNullOrEmpty(puzzleId) || string.IsNullOrEmpty(newState)) return;
+
+        // Chặn phát sự kiện thừa nếu trạng thái mới trùng với trạng thái hiện tại
+        if (_puzzleStages.TryGetValue(puzzleId, out string currentState) && currentState == newState)
+            return;
+
+        _puzzleStages[puzzleId] = newState;
+        Debug.Log($"[GameStateManager] Đổi trạng thái câu đố: {puzzleId} -> {newState}");
+
+        OnPuzzleStateChanged?.Invoke(puzzleId, newState);
+    }
+
+    /// <summary>Đọc trạng thái câu đố dạng chuỗi (Đổi tên để tránh lỗi trùng chữ ký với hàm bool GetPuzzleState cũ).</summary>
+    public string GetPuzzleStateString(string puzzleId)
+    {
+        return _puzzleStages.TryGetValue(puzzleId, out string state) ? state : string.Empty;
+    }
+
+    /// <summary>Đánh dấu vật thể ngoài bản đồ đã bị nhặt/tiêu thụ vĩnh viễn.</summary>
+    public void MarkObjectConsumed(string objectId)
+    {
+        if (!string.IsNullOrEmpty(objectId))
+            _consumedObjectIds.Add(objectId);
+    }
+
+    public bool IsObjectConsumed(string objectId)
+    {
+        return !string.IsNullOrEmpty(objectId) && _consumedObjectIds.Contains(objectId);
+    }
 }

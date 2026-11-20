@@ -12,6 +12,7 @@ public class PuzzleStateCommand
     public string puzzleId; // Mã định danh duy nhất của câu đố (VD: "Ch1_KetSat_MoKhoa")
     public string state;    // Trạng thái mới (VD: "KeyDropped", "Solved")
 }
+[System.Serializable]
 public class DialogueLine
 {
     public string speaker;
