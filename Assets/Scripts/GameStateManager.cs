@@ -12,30 +12,45 @@ public enum GameState
 }
 
 /// <summary>
-/// Quản lý trạng thái toàn cục của game (túi đồ, câu đố, rẽ nhánh, lưu/tải, khóa di chuyển).
-/// Singleton + DontDestroyOnLoad.
+/// Quản lý trạng thái toàn cục của game (trạng thái chơi, câu đố, rẽ nhánh, vật thể đã nhặt, lưu/tải).
+/// Singleton + DontDestroyOnLoad. Kho đồ được quản lý tách biệt bởi InventoryManager.
 /// </summary>
 public class GameStateManager : MonoBehaviour
 {
     public static GameStateManager Instance { get; private set; }
 
-    // --- CÁC KÊNH PHÁT SÓNG SỰ KIỆN ---
-    public event Action OnInventoryChanged;
-    public event Action<GameState> OnGameStateChanged; // Phát sóng khi đổi trạng thái (Mới)
-    public event Action<string> OnPuzzleStateTriggered; // Phát sóng cờ cốt truyện (Mới)
-
+    private const int CurrentSaveVersion = 1;
+    private const string DefaultChapterId = "Ch1";
+    private const string DefaultPlayerName = "Main";
     private const string SaveFileName = "vongnguyet_save.json";
 
-    public GameSaveData Data { get; private set; } = new GameSaveData();
-    public GameSaveData currentData => Data;
-    
-    // Lưu trữ trạng thái hiện tại của game (Mới)
-    public GameState CurrentState { get; private set; } 
+    [Header("Cấu hình Lưu / Tải")]
+    [Tooltip("Nếu bật, tự động tải file Save cục bộ trong Start() (sau khi InventoryManager.Awake đã chạy xong).")]
+    [SerializeField] private bool autoLoadOnStart = false;
+
+    // --- CÁC KÊNH PHÁT SÓNG SỰ KIỆN ---
+    public event Action<GameState> OnGameStateChanged;
+    public event Action<string> OnPuzzleStateTriggered;
+    public event Action<string, string> OnPuzzleStateChanged;
+
+    private GameSaveData currentSaveData = new GameSaveData();
+
+    public GameSaveData Data => currentSaveData;
+    public GameSaveData currentData => currentSaveData;
+    public GameState CurrentState { get; private set; }
+
+    // Lưu trạng thái câu đố nhiều giai đoạn: Key = puzzleId, Value = stage (VD: "KeyDropped", "Solved")
+    private readonly Dictionary<string, string> _puzzleStages = new Dictionary<string, string>();
+
+    // Lưu ID các vật thể đã nhặt để chặn lỗi hồi sinh vật phẩm (Item Respawn) khi tải lại Scene
+    private readonly HashSet<string> _consumedWorldObjectIds = new HashSet<string>();
 
     private string SavePath => Path.Combine(Application.persistentDataPath, SaveFileName);
+    private string TempSavePath => SavePath + ".tmp";
 
     private void Awake()
     {
+        // Chặn nhân bản Singleton khi người chơi chuyển hoặc quay lại Scene cũ
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -43,21 +58,38 @@ public class GameStateManager : MonoBehaviour
         }
 
         Instance = this;
+
+        // Edge Case: DontDestroyOnLoad chỉ hoạt động khi GameObject nằm ở cấp Root của Hierarchy
+        if (transform.parent != null)
+            transform.SetParent(null);
+
         DontDestroyOnLoad(gameObject);
     }
 
     private void Start()
     {
+        // Edge Case Execution Order: không gọi ImportSaveData ở Awake() vì InventoryManager có thể chưa Awake xong
+        if (autoLoadOnStart && File.Exists(SavePath))
+        {
+            LoadLocalGame();
+        }
+
         // Mặc định vào game là cho phép đi lại tự do
         ChangeState(GameState.FreeRoam);
     }
 
-    // ================= QUẢN LÝ TRẠNG THÁI (MỚI) =================
+    private void OnDestroy()
+    {
+        if (Instance == this)
+            Instance = null;
+    }
+
+    // ================= QUẢN LÝ TRẠNG THÁI =================
 
     public void ChangeState(GameState newState)
     {
         CurrentState = newState;
-        OnGameStateChanged?.Invoke(newState); // Báo cho PlayerController khóa/mở di chuyển
+        OnGameStateChanged?.Invoke(newState);
     }
 
     public void TriggerPuzzleState(string stateName)
@@ -66,125 +98,51 @@ public class GameStateManager : MonoBehaviour
         {
             Debug.Log($"[GameStateManager] Kích hoạt cờ cốt truyện: {stateName}");
             OnPuzzleStateTriggered?.Invoke(stateName);
-            
-            // Tự động lưu cờ này vào Data luôn để ghi nhớ
+
+            // Tự động lưu cờ này vào dữ liệu Save để ghi nhớ
             SetPuzzleState(stateName, true);
         }
     }
 
-    // ================= TÚI ĐỒ =================
-
-    public void AddItem(string itemID)
-    {
-        if (string.IsNullOrEmpty(itemID) || HasItem(itemID)) return;
-
-        Data.inventoryItems.Add(itemID);
-        OnInventoryChanged?.Invoke();
-    }
-
-    public void RemoveItem(string itemID)
-    {
-        if (string.IsNullOrEmpty(itemID)) return;
-
-        if (Data.inventoryItems.Remove(itemID))
-        {
-            OnInventoryChanged?.Invoke();
-        }
-    }
-
-    public bool HasItem(string itemID)
-    {
-        return !string.IsNullOrEmpty(itemID) && Data.inventoryItems.Contains(itemID);
-    }
-
-    // ================= CÂU ĐỐ & RẼ NHÁNH =================
+    // ================= CÂU ĐỐ & RẼ NHÁNH (BOOL) =================
 
     public void SetPuzzleState(string puzzleID, bool state)
     {
         if (string.IsNullOrEmpty(puzzleID)) return;
 
-        foreach (PuzzleState p in Data.puzzleStates)
+        EnsureSaveDataIntegrity(currentSaveData);
+
+        for (int i = 0; i < currentSaveData.puzzleStates.Count; i++)
         {
-            if (p.puzzleID == puzzleID)
+            PuzzleState p = currentSaveData.puzzleStates[i];
+            if (p != null && p.puzzleID == puzzleID)
             {
                 p.state = state;
                 return;
             }
         }
 
-        Data.puzzleStates.Add(new PuzzleState(puzzleID, state));
+        currentSaveData.puzzleStates.Add(new PuzzleState(puzzleID, state));
     }
 
     public bool GetPuzzleState(string puzzleID)
     {
-        foreach (PuzzleState p in Data.puzzleStates)
+        if (string.IsNullOrEmpty(puzzleID) || currentSaveData == null || currentSaveData.puzzleStates == null)
+            return false;
+
+        for (int i = 0; i < currentSaveData.puzzleStates.Count; i++)
         {
-            if (p.puzzleID == puzzleID) return p.state;
+            PuzzleState p = currentSaveData.puzzleStates[i];
+            if (p != null && p.puzzleID == puzzleID)
+                return p.state;
         }
 
         return false;
     }
 
-    // ================= NGƯỜI CHƠI =================
-
-    public void SetPlayerName(string name)
-    {
-        Data.playerName = string.IsNullOrWhiteSpace(name) ? "Main" : name.Trim();
-    }
-
-    // ================= LƯU / TẢI =================
-
-    public void SaveGameProgress()
-    {
-        try
-        {
-            Data.currentScene = SceneManager.GetActiveScene().name;
-            string json = JsonUtility.ToJson(Data, true);
-            File.WriteAllText(SavePath, json);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"[GameStateManager] Lưu game thất bại: {e.Message}");
-        }
-    }
-
-    public void LoadLocalGame()
-    {
-        try
-        {
-            if (!File.Exists(SavePath))
-            {
-                Debug.LogWarning("[GameStateManager] Không tìm thấy file save.");
-                return;
-            }
-
-            string json = File.ReadAllText(SavePath);
-            GameSaveData loaded = JsonUtility.FromJson<GameSaveData>(json);
-            if (loaded == null) return;
-
-            if (loaded.inventoryItems == null) loaded.inventoryItems = new List<string>();
-            if (loaded.puzzleStates == null) loaded.puzzleStates = new List<PuzzleState>();
-
-            Data = loaded;
-            OnInventoryChanged?.Invoke();
-        }
-        catch (Exception e)
-        {
-            Debug.LogError($"[GameStateManager] Tải game thất bại: {e.Message}");
-        }
-    }
     // ================= CÂU ĐỐ ĐA TRẠNG THÁI & VẬT THỂ ĐÃ NHẶT =================
 
-    // Lưu trạng thái câu đố nhiều giai đoạn: Key = puzzleId, Value = state (VD: "KeyDropped", "Solved")
-    private readonly Dictionary<string, string> _puzzleStages = new Dictionary<string, string>();
-
-    // Lưu ID các vật thể đã nhặt để chặn lỗi hồi sinh vật phẩm (Item Respawn) khi tải lại Scene
-    private readonly HashSet<string> _consumedObjectIds = new HashSet<string>();
-
-    // Sự kiện (Event) phát sóng cho các vật thể ngoài bản đồ tự lắng nghe mà không cần Update()
-    public event Action<string, string> OnPuzzleStateChanged;
-
-    /// <summary>Cập nhật trạng thái câu đố dạng chuỗi (Overload - Nạp chồng của bản bool cũ).</summary>
+    /// <summary>Cập nhật trạng thái câu đố dạng chuỗi (Overload của bản bool cũ).</summary>
     public void SetPuzzleState(string puzzleId, string newState)
     {
         if (string.IsNullOrEmpty(puzzleId) || string.IsNullOrEmpty(newState)) return;
@@ -199,9 +157,10 @@ public class GameStateManager : MonoBehaviour
         OnPuzzleStateChanged?.Invoke(puzzleId, newState);
     }
 
-    /// <summary>Đọc trạng thái câu đố dạng chuỗi (Đổi tên để tránh lỗi trùng chữ ký với hàm bool GetPuzzleState cũ).</summary>
+    /// <summary>Đọc trạng thái câu đố dạng chuỗi (tránh trùng chữ ký với hàm bool GetPuzzleState cũ).</summary>
     public string GetPuzzleStateString(string puzzleId)
     {
+        if (string.IsNullOrEmpty(puzzleId)) return string.Empty;
         return _puzzleStages.TryGetValue(puzzleId, out string state) ? state : string.Empty;
     }
 
@@ -209,11 +168,224 @@ public class GameStateManager : MonoBehaviour
     public void MarkObjectConsumed(string objectId)
     {
         if (!string.IsNullOrEmpty(objectId))
-            _consumedObjectIds.Add(objectId);
+            _consumedWorldObjectIds.Add(objectId);
     }
 
     public bool IsObjectConsumed(string objectId)
     {
-        return !string.IsNullOrEmpty(objectId) && _consumedObjectIds.Contains(objectId);
+        return !string.IsNullOrEmpty(objectId) && _consumedWorldObjectIds.Contains(objectId);
+    }
+
+    // ================= NGƯỜI CHƠI =================
+
+    public void SetPlayerName(string name)
+    {
+        EnsureSaveDataIntegrity(currentSaveData);
+        currentSaveData.playerName = string.IsNullOrWhiteSpace(name) ? DefaultPlayerName : name.Trim();
+    }
+
+    // ================= LƯU / TẢI / ĐẶT LẠI DỮ LIỆU =================
+
+    public void SaveGameProgress()
+    {
+        try
+        {
+            EnsureSaveDataIntegrity(currentSaveData);
+
+            currentSaveData.saveVersion = CurrentSaveVersion;
+            currentSaveData.chapterId = string.IsNullOrWhiteSpace(currentSaveData.chapterId)
+                ? DefaultChapterId
+                : currentSaveData.chapterId;
+            currentSaveData.currentScene = SceneManager.GetActiveScene().name;
+
+            // Đồng bộ kho đồ từ InventoryManager (bản sao độc lập)
+            if (InventoryManager.Instance != null)
+            {
+                currentSaveData.inventory = InventoryManager.Instance.ExportSaveData();
+            }
+
+            // Đồng bộ Dictionary câu đố đa giai đoạn -> List<PuzzleStageEntry> (tái sử dụng List để giảm GC)
+            currentSaveData.puzzleStages.Clear();
+            foreach (KeyValuePair<string, string> pair in _puzzleStages)
+            {
+                if (string.IsNullOrEmpty(pair.Key) || string.IsNullOrEmpty(pair.Value))
+                    continue;
+
+                currentSaveData.puzzleStages.Add(new PuzzleStageEntry(pair.Key, pair.Value));
+            }
+
+            // Đồng bộ HashSet vật thể đã nhặt -> List<string> (tái sử dụng List để giảm GC)
+            currentSaveData.consumedWorldObjectIds.Clear();
+            foreach (string objectId in _consumedWorldObjectIds)
+            {
+                if (!string.IsNullOrEmpty(objectId))
+                    currentSaveData.consumedWorldObjectIds.Add(objectId);
+            }
+
+            string directory = Path.GetDirectoryName(SavePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
+
+            string json = JsonUtility.ToJson(currentSaveData, true);
+
+            // Edge Case Android/Crash: Atomic Write - ghi ra file tạm .tmp trước rồi mới thay thế file chính
+            File.WriteAllText(TempSavePath, json);
+
+            if (File.Exists(SavePath))
+            {
+                File.Replace(TempSavePath, SavePath, null);
+            }
+            else
+            {
+                File.Move(TempSavePath, SavePath);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameStateManager] Lưu game thất bại: {e.Message}");
+            TryDeleteTempFile();
+        }
+    }
+
+    public void LoadLocalGame()
+    {
+        try
+        {
+            if (!File.Exists(SavePath))
+            {
+                Debug.LogWarning("[GameStateManager] Không tìm thấy file save. Khởi tạo dữ liệu mới sạch.");
+                InitializeCleanSaveState();
+                return;
+            }
+
+            string json = File.ReadAllText(SavePath);
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                Debug.LogWarning("[GameStateManager] File save rỗng. Khởi tạo dữ liệu mới sạch.");
+                InitializeCleanSaveState();
+                return;
+            }
+
+            GameSaveData loaded = JsonUtility.FromJson<GameSaveData>(json);
+            if (loaded == null)
+            {
+                Debug.LogWarning("[GameStateManager] Không parse được dữ liệu từ file save. Khởi tạo dữ liệu mới sạch.");
+                InitializeCleanSaveState();
+                return;
+            }
+
+            // Chống null cho mọi danh sách để tương thích ngược với file Save phiên bản cũ
+            EnsureSaveDataIntegrity(loaded);
+            currentSaveData = loaded;
+
+            // Nạp ngược puzzleStages vào Dictionary nội bộ (bỏ qua entry rỗng do Edge Case JsonUtility)
+            _puzzleStages.Clear();
+            for (int i = 0; i < currentSaveData.puzzleStages.Count; i++)
+            {
+                PuzzleStageEntry entry = currentSaveData.puzzleStages[i];
+                if (entry == null || string.IsNullOrEmpty(entry.puzzleId) || string.IsNullOrEmpty(entry.stage))
+                    continue;
+
+                _puzzleStages[entry.puzzleId] = entry.stage;
+            }
+
+            // Nạp ngược consumedWorldObjectIds vào HashSet nội bộ
+            _consumedWorldObjectIds.Clear();
+            for (int i = 0; i < currentSaveData.consumedWorldObjectIds.Count; i++)
+            {
+                string objectId = currentSaveData.consumedWorldObjectIds[i];
+                if (!string.IsNullOrEmpty(objectId))
+                    _consumedWorldObjectIds.Add(objectId);
+            }
+
+            // Khôi phục kho đồ sang InventoryManager (dùng != null đúng chuẩn UnityEngine.Object)
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.Instance.ImportSaveData(currentSaveData.inventory);
+            }
+
+            // Thông báo lại các trạng thái câu đố đã nạp để vật thể ngoài bản đồ đồng bộ hiển thị
+            foreach (KeyValuePair<string, string> pair in _puzzleStages)
+            {
+                OnPuzzleStateChanged?.Invoke(pair.Key, pair.Value);
+            }
+        }
+        catch (Exception e)
+        {
+            // Edge Case: file JSON bị hỏng định dạng -> không làm sập game, fallback về Save sạch
+            Debug.LogWarning($"[GameStateManager] Tải game thất bại do lỗi đọc/định dạng file save ({e.Message}). Khởi tạo dữ liệu mới sạch.");
+            InitializeCleanSaveState();
+        }
+    }
+
+    /// <summary>Đặt lại toàn bộ dữ liệu Save về trạng thái sạch (dùng cho nút Chơi mới / New Game và test nhanh).</summary>
+    public void ResetSaveData(bool deleteLocalFile = false)
+    {
+        currentSaveData = new GameSaveData();
+        _puzzleStages.Clear();
+        _consumedWorldObjectIds.Clear();
+
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.ClearInventory();
+        }
+
+        if (deleteLocalFile)
+        {
+            try
+            {
+                if (File.Exists(SavePath))
+                    File.Delete(SavePath);
+
+                TryDeleteTempFile();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[GameStateManager] Không thể xóa file save cục bộ: {e.Message}");
+            }
+        }
+    }
+
+    private void InitializeCleanSaveState()
+    {
+        currentSaveData = new GameSaveData();
+        _puzzleStages.Clear();
+        _consumedWorldObjectIds.Clear();
+
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.ImportSaveData(currentSaveData.inventory);
+        }
+    }
+
+    private void EnsureSaveDataIntegrity(GameSaveData data)
+    {
+        if (data == null)
+        {
+            currentSaveData = new GameSaveData();
+            data = currentSaveData;
+        }
+
+        if (data.saveVersion <= 0) data.saveVersion = CurrentSaveVersion;
+        if (string.IsNullOrWhiteSpace(data.chapterId)) data.chapterId = DefaultChapterId;
+        if (string.IsNullOrWhiteSpace(data.playerName)) data.playerName = DefaultPlayerName;
+        if (data.currentDay <= 0) data.currentDay = 1;
+        if (data.puzzleStates == null) data.puzzleStates = new List<PuzzleState>();
+        if (data.puzzleStages == null) data.puzzleStages = new List<PuzzleStageEntry>();
+        if (data.consumedWorldObjectIds == null) data.consumedWorldObjectIds = new List<string>();
+        if (data.inventory == null) data.inventory = new List<InventorySlotData>();
+    }
+
+    private void TryDeleteTempFile()
+    {
+        try
+        {
+            if (File.Exists(TempSavePath))
+                File.Delete(TempSavePath);
+        }
+        catch
+        {
+            // Bỏ qua lỗi dọn file tạm để không che khuất lỗi gốc
+        }
     }
 }
