@@ -25,3 +25,7 @@
 # Bỏ qua file hệ điều hành
 .DS_Store
 Thumbs.db
+# Bỏ qua cache của Visual Studio, file solution Unity 6 và cấu hình AI cục bộ
+.vs/
+*.slnx     
+.gemini/   

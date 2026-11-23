@@ -16,6 +16,19 @@ public class PuzzleState
     }
 }
 
+[System.Serializable]
+public class PuzzleStageEntry
+{
+    public string puzzleId;
+    public string stage;
+
+    public PuzzleStageEntry(string puzzleId, string stage)
+    {
+        this.puzzleId = puzzleId;
+        this.stage = stage;
+    }
+}
+
 /// <summary>
 /// Dữ liệu lưu game, được serialize bằng JsonUtility.
 /// </summary>
@@ -32,9 +45,15 @@ public class GameSaveData
     public const string Branch_Helped_Little_Girl = "Branch_Helped_Little_Girl";
 
     // ---- Dữ liệu lưu ----
+    public int saveVersion = 1;
+    public string chapterId = "Ch1";
     public string playerName = "Main";
     public int currentDay = 1;
     public string currentScene;
     public List<string> inventoryItems = new List<string>();
+    public List<InventorySlotData> inventory = new List<InventorySlotData>();
     public List<PuzzleState> puzzleStates = new List<PuzzleState>();
+    // Dùng List<PuzzleStageEntry> thay cho Dictionary vì JsonUtility không hỗ trợ serialize Dictionary
+    public List<PuzzleStageEntry> puzzleStages = new List<PuzzleStageEntry>();
+    public List<string> consumedWorldObjectIds = new List<string>();
 }
