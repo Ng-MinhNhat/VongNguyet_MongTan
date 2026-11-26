@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 076c01744b839b846b1a11f1138b23d9, type: 3}
+  m_Name: Recipe_Ch1_GhepLaThu
+  m_EditorClassIdentifier: Assembly-CSharp::ItemCombineRecipe
+  recipeId: Ch1_Ghep_LaThu_CoChu
+  itemA: {fileID: 11400000, guid: e4750352406d88d4d9a70a958f60bace, type: 2}
+  itemB: {fileID: 11400000, guid: ec69362bdb7267c4c80ace9909c35adc, type: 2}
+  resultItem: {fileID: 11400000, guid: c4959c259a339c14bb2bf42521e10ff3, type: 2}
+  resultQuantity: 1
+  consumeItemA: 1
+  consumeItemB: 1
+  successMessage: "\u0110\xE3 gh\xE9p ho\xE0n ch\u1EC9nh l\xE1 th\u01B0 c\u1EE7a
+    c\xF4 ch\u1EE7!"

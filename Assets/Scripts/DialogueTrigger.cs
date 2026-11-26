@@ -37,11 +37,12 @@ public class DialogueTrigger : MonoBehaviour
         // Thoát sớm khi người chơi đứng ngoài vùng tương tác
         if (!isPlayerInRange) return;
 
-        // Edge Case: chặn lọt phím tương tác (E) khi đang Pause, chuyển phòng, mở Popup Kho đồ hoặc mở bảng Keypad
+        // Edge Case: chặn lọt phím tương tác (E) khi đang Pause, chuyển phòng, mở Popup Kho đồ, mở Keypad hoặc đang Soi manh mối
         if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused) return;
         if (RoomTransitionManager.Instance != null && RoomTransitionManager.Instance.IsTransitioning) return;
         if (InventoryUIController.Instance != null && InventoryUIController.Instance.IsPopupOpen) return;
         if (KeypadUIController.Instance != null && KeypadUIController.Instance.IsOpen) return;
+        if (ItemInspectUIController.Instance != null && ItemInspectUIController.Instance.IsOpen) return;
 
 #if ENABLE_LEGACY_INPUT_MANAGER
         if (!Input.GetKeyDown(interactKey)) return;
@@ -105,6 +106,11 @@ public class DialogueTrigger : MonoBehaviour
         }
 
         if (KeypadUIController.Instance != null && KeypadUIController.Instance.IsOpen)
+        {
+            return;
+        }
+
+        if (ItemInspectUIController.Instance != null && ItemInspectUIController.Instance.IsOpen)
         {
             return;
         }

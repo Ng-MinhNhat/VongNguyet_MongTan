@@ -169,6 +169,12 @@ public class RoomDoor : MonoBehaviour
             return false;
         }
 
+        // Chặn bước qua cửa khi đang mở bảng Soi manh mối
+        if (ItemInspectUIController.Instance != null && ItemInspectUIController.Instance.IsOpen)
+        {
+            return false;
+        }
+
         _isProcessingDoor = true;
         try
         {

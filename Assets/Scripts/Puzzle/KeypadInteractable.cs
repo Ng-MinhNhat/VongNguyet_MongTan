@@ -194,6 +194,12 @@ public class KeypadInteractable : MonoBehaviour
             return false;
         }
 
+        // Chặn mở Keypad khi đang mở bảng Soi manh mối
+        if (ItemInspectUIController.Instance != null && ItemInspectUIController.Instance.IsOpen)
+        {
+            return false;
+        }
+
         _isProcessingInteraction = true;
         try
         {

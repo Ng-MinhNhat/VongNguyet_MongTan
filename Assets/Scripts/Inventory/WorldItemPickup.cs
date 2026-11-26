@@ -196,6 +196,7 @@ public class WorldItemPickup : MonoBehaviour
         if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused) return;
         if (DialogueManager.Instance != null && DialogueManager.Instance.IsDialogueActive) return;
         if (KeypadUIController.Instance != null && KeypadUIController.Instance.IsOpen) return;
+        if (ItemInspectUIController.Instance != null && ItemInspectUIController.Instance.IsOpen) return;
 
         if (itemData == null)
         {

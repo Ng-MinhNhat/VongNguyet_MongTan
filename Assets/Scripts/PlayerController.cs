@@ -136,6 +136,10 @@ public class PlayerController : MonoBehaviour
         if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused)
             return true;
 
+        // Khóa di chuyển khi người chơi đang soi manh mối trực tiếp (kể cả ngoài Kho đồ)
+        if (ItemInspectUIController.Instance != null && ItemInspectUIController.Instance.IsOpen)
+            return true;
+
         return false;
     }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -88,6 +89,22 @@ public class InventoryUIController : MonoBehaviour
     [Tooltip("Nút bấm trên HUD để bỏ cầm vật phẩm hiện tại.")]
     [SerializeField] private Button unequipHudButton;
 
+    [Header("Soi & Ghép đồ (Inspect & Combine)")]
+    [Tooltip("Nút mở bảng Soi manh mối (SOI) cho vật phẩm đang xem có IsInspectable == true.")]
+    [SerializeField] private Button inspectButton;
+
+    [Tooltip("Nút bắt đầu chế độ ghép 2 bước (GHÉP) cho vật phẩm đang xem.")]
+    [SerializeField] private Button combineButton;
+
+    [Tooltip("Nút hủy chế độ ghép (HỦY GHÉP), chỉ hiển thị khi đang chờ người chơi chọn vật phẩm thứ 2.")]
+    [SerializeField] private Button cancelCombineButton;
+
+    [Tooltip("Văn bản TextMeshPro hiển thị hướng dẫn chọn món thứ 2 hoặc thông báo kết quả ghép.")]
+    [SerializeField] private TMP_Text combineStatusText;
+
+    [Tooltip("Thời gian (giây thực tế unscaled) hiển thị thông báo kết quả ghép trước khi tự ẩn.")]
+    [SerializeField] private float combineFeedbackDuration = 2.0f;
+
     [Header("Nhãn văn bản hiển thị (Tùy chọn)")]
     [Tooltip("Chữ hiện trên nút hành động khi cầm vật phẩm cốt truyện (KeyItem) hoặc vật phẩm trang bị.")]
     [SerializeField] private string equipButtonLabel = "Cầm lên";
@@ -116,6 +133,11 @@ public class InventoryUIController : MonoBehaviour
 
     private string _inspectedItemId = string.Empty;
     private bool _areButtonListenersRegistered;
+
+    // Trạng thái ghép 2 bước (thân thiện cả PC & Mobile, không dùng Drag-and-Drop)
+    private bool _isCombineMode;
+    private ItemData _combineFirstItem;
+    private Coroutine _feedbackCoroutine;
 
     private void Awake()
     {
@@ -149,8 +171,11 @@ public class InventoryUIController : MonoBehaviour
 
     private void OnDisable()
     {
-        // Luôn hủy đăng ký sự kiện khi tắt object / chuyển Scene để chống Memory Leak
+        // Luôn hủy đăng ký sự kiện và dọn trạng thái ghép / Coroutine khi tắt object chống Memory Leak & kẹt trạng thái
         UnsubscribeCoreEvents();
+        ExitCombineMode(false);
+        StopCombineFeedbackCoroutine();
+        HideCombineStatusText();
     }
 
     private void OnDestroy()
@@ -176,6 +201,14 @@ public class InventoryUIController : MonoBehaviour
             return;
         }
 
+        // Chuỗi ưu tiên Esc (tầng 1 Inspect -> tầng 2 Combine -> tầng 3 Inventory -> tầng 4 Pause):
+        // Nếu bảng Soi đang mở hoặc vừa đóng ở đúng frame hiện tại -> bỏ qua toàn bộ phím tắt để không đóng đè Kho đồ
+        if (ItemInspectUIController.Instance != null
+            && (ItemInspectUIController.Instance.IsOpen || ItemInspectUIController.Instance.LastClosedFrame == Time.frameCount))
+        {
+            return;
+        }
+
         // Tối ưu GC: tuyệt đối không gọi Find(), GetComponent() hay tạo chuỗi trong Update(), chỉ bắt phím tắt PC
         if (WasToggleBagKeyPressed())
         {
@@ -196,6 +229,14 @@ public class InventoryUIController : MonoBehaviour
 
         if (IsPopupOpen && WasCloseBagKeyPressed())
         {
+            // Ưu tiên tầng 2 (Combine): đang chờ chọn món thứ 2 -> bấm Escape chỉ hủy chế độ ghép, chưa đóng Kho đồ
+            if (_isCombineMode)
+            {
+                ExitCombineMode(true);
+                return;
+            }
+
+            // Ưu tiên tầng 3 (Inventory): đóng Kho đồ và ghi nhận LastClosedFrame để PauseMenu không bật cùng frame
             ClosePopup();
         }
     }
@@ -261,6 +302,10 @@ public class InventoryUIController : MonoBehaviour
             // Tối ưu GC: dùng SetText của TextMeshPro thay vì count.ToString()
             bagCountBadgeText.SetText("{0}", 0);
         }
+
+        ExitCombineMode(false);
+        HideCombineStatusText();
+        UpdateInspectAndCombineButtons(null);
     }
 
     private void RegisterButtonListeners()
@@ -274,6 +319,9 @@ public class InventoryUIController : MonoBehaviour
         if (closeBagButton != null) closeBagButton.onClick.AddListener(ClosePopup);
         if (useOrEquipButton != null) useOrEquipButton.onClick.AddListener(HandleUseOrEquipClicked);
         if (unequipHudButton != null) unequipHudButton.onClick.AddListener(ClearEquippedItem);
+        if (inspectButton != null) inspectButton.onClick.AddListener(HandleInspectButtonClicked);
+        if (combineButton != null) combineButton.onClick.AddListener(HandleCombineButtonClicked);
+        if (cancelCombineButton != null) cancelCombineButton.onClick.AddListener(HandleCancelCombineClicked);
 
         _areButtonListenersRegistered = true;
     }
@@ -289,6 +337,9 @@ public class InventoryUIController : MonoBehaviour
         if (closeBagButton != null) closeBagButton.onClick.RemoveListener(ClosePopup);
         if (useOrEquipButton != null) useOrEquipButton.onClick.RemoveListener(HandleUseOrEquipClicked);
         if (unequipHudButton != null) unequipHudButton.onClick.RemoveListener(ClearEquippedItem);
+        if (inspectButton != null) inspectButton.onClick.RemoveListener(HandleInspectButtonClicked);
+        if (combineButton != null) combineButton.onClick.RemoveListener(HandleCombineButtonClicked);
+        if (cancelCombineButton != null) cancelCombineButton.onClick.RemoveListener(HandleCancelCombineClicked);
 
         _areButtonListenersRegistered = false;
     }
@@ -368,8 +419,13 @@ public class InventoryUIController : MonoBehaviour
             return;
         }
 
-        // Edge Case: chặn mở túi đồ đè lên bảng nhập mật mã Keypad
+        // Edge Case: chặn mở túi đồ đè lên bảng nhập mật mã Keypad hoặc bảng Soi manh mối
         if (KeypadUIController.Instance != null && KeypadUIController.Instance.IsOpen)
+        {
+            return;
+        }
+
+        if (ItemInspectUIController.Instance != null && ItemInspectUIController.Instance.IsOpen)
         {
             return;
         }
@@ -387,9 +443,13 @@ public class InventoryUIController : MonoBehaviour
         RefreshInventoryUI();
     }
 
-    /// <summary>Đóng Popup kho đồ và dọn khung chi tiết (2B) đang mở.</summary>
+    /// <summary>Đóng Popup kho đồ và dọn khung chi tiết (2B), chế độ ghép đang mở.</summary>
     public void ClosePopup()
     {
+        ExitCombineMode(false);
+        StopCombineFeedbackCoroutine();
+        HideCombineStatusText();
+
         if (!IsPopupOpen && (popupRoot == null || !popupRoot.activeSelf))
         {
             ClearInspection();
@@ -495,6 +555,12 @@ public class InventoryUIController : MonoBehaviour
             }
         }
 
+        // Edge Case đồng bộ khi mất vật phẩm nguồn trong lúc đang ở chế độ Ghép
+        if (_isCombineMode && (_combineFirstItem == null || manager == null || !manager.HasItem(_combineFirstItem.itemId)))
+        {
+            ExitCombineMode(true);
+        }
+
         // Edge Case đồng bộ khi mất vật phẩm đang xem trong Detail Modal (2B)
         if (!string.IsNullOrEmpty(_inspectedItemId))
         {
@@ -510,12 +576,13 @@ public class InventoryUIController : MonoBehaviour
         else
         {
             SetGameObjectActiveSafe(detailPanel, false);
+            UpdateInspectAndCombineButtons(null);
         }
     }
 
-    // ================= XỬ LÝ KHUNG CHI TIẾT (2B) & CẦM VẬT PHẨM =================
+    // ================= XỬ LÝ KHUNG CHI TIẾT (2B), SOI & GHÉP VẬT PHẨM =================
 
-    /// <summary>Xử lý khi người chơi bấm/chạm vào một ô vật phẩm trong lưới (1B -> 2B).</summary>
+    /// <summary>Xử lý khi người chơi bấm/chạm vào một ô vật phẩm trong lưới (chế độ bình thường hoặc chọn món thứ 2 khi Ghép).</summary>
     private void HandleSlotClicked(InventorySlotUI clickedSlot)
     {
         if (clickedSlot == null || !clickedSlot.HasItem)
@@ -531,6 +598,49 @@ public class InventoryUIController : MonoBehaviour
             return;
         }
 
+        // Chế độ Ghép 2 bước: người chơi vừa chọn vật phẩm thứ 2 -> thực hiện ghép nguyên tử qua InventoryManager
+        if (_isCombineMode)
+        {
+            ItemData firstItem = _combineFirstItem;
+            ItemData clickedItem = manager.GetItemData(clickedItemId);
+
+            CombineResult result = manager.TryCombineItems(firstItem, clickedItem, out ItemCombineRecipe matchedRecipe);
+            ExitCombineMode(false);
+
+            switch (result)
+            {
+                case CombineResult.Success:
+                    RefreshInventoryUI();
+
+                    // Tự động chọn vật phẩm kết quả mới tạo thành nếu đang tồn tại trong túi
+                    if (matchedRecipe != null && matchedRecipe.ResultItem != null && manager.HasItem(matchedRecipe.ResultItem.itemId))
+                    {
+                        _inspectedItemId = matchedRecipe.ResultItem.itemId;
+                        ShowItemDetail(_inspectedItemId);
+                        UpdateSlotSelectionHighlights();
+                    }
+
+                    string successMsg = matchedRecipe != null && !string.IsNullOrEmpty(matchedRecipe.SuccessMessage)
+                        ? matchedRecipe.SuccessMessage
+                        : "Ghép vật phẩm thành công!";
+                    ShowCombineFeedback(successMsg);
+                    break;
+
+                case CombineResult.MissingRequiredItems:
+                    ShowCombineFeedback("Không đủ số lượng vật phẩm để ghép!");
+                    break;
+
+                case CombineResult.NoMatchingRecipe:
+                case CombineResult.InvalidInput:
+                default:
+                    ShowCombineFeedback("Không thể ghép hai vật phẩm này!");
+                    break;
+            }
+
+            return;
+        }
+
+        // Chế độ bình thường: xem chi tiết vật phẩm và cập nhật nút SOI / GHÉP
         _inspectedItemId = clickedItemId;
         ShowItemDetail(_inspectedItemId);
         UpdateSlotSelectionHighlights();
@@ -595,6 +705,152 @@ public class InventoryUIController : MonoBehaviour
         }
 
         UpdateUseOrEquipButtonVisual(itemData);
+        UpdateInspectAndCombineButtons(itemData);
+    }
+
+    private void UpdateInspectAndCombineButtons(ItemData selectedItem)
+    {
+        if (inspectButton != null)
+        {
+            inspectButton.interactable = selectedItem != null && selectedItem.IsInspectable;
+        }
+
+        if (combineButton != null)
+        {
+            combineButton.interactable = selectedItem != null;
+        }
+    }
+
+    private void HandleInspectButtonClicked()
+    {
+        if (string.IsNullOrEmpty(_inspectedItemId) || InventoryManager.Instance == null)
+        {
+            return;
+        }
+
+        if (_isCombineMode)
+        {
+            ExitCombineMode(true);
+        }
+
+        ItemData selectedItem = InventoryManager.Instance.GetItemData(_inspectedItemId);
+        if (ItemInspectUIController.Instance != null)
+        {
+            ItemInspectUIController.Instance.Open(selectedItem);
+        }
+    }
+
+    private void HandleCombineButtonClicked()
+    {
+        if (string.IsNullOrEmpty(_inspectedItemId) || InventoryManager.Instance == null)
+        {
+            return;
+        }
+
+        ItemData selectedItem = InventoryManager.Instance.GetItemData(_inspectedItemId);
+        if (selectedItem == null || !InventoryManager.Instance.HasItem(selectedItem.itemId))
+        {
+            RefreshInventoryUI();
+            return;
+        }
+
+        StopCombineFeedbackCoroutine();
+        _isCombineMode = true;
+        _combineFirstItem = selectedItem;
+
+        if (cancelCombineButton != null)
+        {
+            SetGameObjectActiveSafe(cancelCombineButton.gameObject, true);
+        }
+
+        if (combineStatusText != null)
+        {
+            combineStatusText.text = "Chọn vật phẩm thứ 2 để ghép...";
+            SetGameObjectActiveSafe(combineStatusText.gameObject, true);
+            combineStatusText.enabled = true;
+        }
+    }
+
+    private void HandleCancelCombineClicked()
+    {
+        ExitCombineMode(true);
+    }
+
+    private void ExitCombineMode(bool clearStatusText)
+    {
+        _isCombineMode = false;
+        _combineFirstItem = null;
+
+        if (cancelCombineButton != null)
+        {
+            SetGameObjectActiveSafe(cancelCombineButton.gameObject, false);
+        }
+
+        if (clearStatusText)
+        {
+            StopCombineFeedbackCoroutine();
+            HideCombineStatusText();
+        }
+    }
+
+    private void ShowCombineFeedback(string message)
+    {
+        if (combineStatusText == null)
+        {
+            return;
+        }
+
+        StopCombineFeedbackCoroutine();
+        _feedbackCoroutine = StartCoroutine(CombineFeedbackRoutine(message));
+    }
+
+    private IEnumerator CombineFeedbackRoutine(string message)
+    {
+        if (combineStatusText == null)
+        {
+            yield break;
+        }
+
+        combineStatusText.text = message;
+        SetGameObjectActiveSafe(combineStatusText.gameObject, true);
+        combineStatusText.enabled = true;
+
+        try
+        {
+            // Tối ưu GC: đếm thời gian bằng Time.unscaledDeltaTime thay vì cấp phát new WaitForSeconds()
+            float duration = Mathf.Max(0f, combineFeedbackDuration);
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+        finally
+        {
+            HideCombineStatusText();
+            _feedbackCoroutine = null;
+        }
+    }
+
+    private void StopCombineFeedbackCoroutine()
+    {
+        if (_feedbackCoroutine != null)
+        {
+            StopCoroutine(_feedbackCoroutine);
+            _feedbackCoroutine = null;
+        }
+    }
+
+    private void HideCombineStatusText()
+    {
+        if (combineStatusText == null)
+        {
+            return;
+        }
+
+        combineStatusText.enabled = false;
+        SetGameObjectActiveSafe(combineStatusText.gameObject, false);
     }
 
     private void UpdateUseOrEquipButtonVisual(ItemData itemData)

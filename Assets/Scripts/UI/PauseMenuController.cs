@@ -204,6 +204,13 @@ public class PauseMenuController : MonoBehaviour
             return true;
         }
 
+        // Ưu tiên tầng 1 (Inspect): chặn mở Pause khi bảng Soi đang mở hoặc vừa đóng ở đúng frame hiện tại
+        if (ItemInspectUIController.Instance != null
+            && (ItemInspectUIController.Instance.IsOpen || ItemInspectUIController.Instance.LastClosedFrame == Time.frameCount))
+        {
+            return true;
+        }
+
         // Chống xung đột Escape cùng frame: nếu Keypad đang mở HOẶC vừa mới đóng ở đúng frame hiện tại -> bỏ qua
         if (KeypadUIController.Instance != null
             && (KeypadUIController.Instance.IsOpen || KeypadUIController.Instance.LastClosedFrame == Time.frameCount))
