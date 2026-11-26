@@ -22,6 +22,9 @@ public class InventoryUIController : MonoBehaviour
     /// <summary>Trạng thái Popup kho đồ hiện đang mở hay đóng.</summary>
     public bool IsPopupOpen { get; private set; }
 
+    /// <summary>Frame gần nhất Popup Kho đồ vừa đóng (dùng để PauseMenuController chống xung đột phím Escape cùng frame).</summary>
+    public int LastClosedFrame { get; private set; } = -1;
+
     /// <summary>ID vật phẩm người chơi đang cầm trên tay để tương tác câu đố ngoài Scene (rỗng nếu không cầm).</summary>
     public string EquippedItemId { get; private set; } = string.Empty;
 
@@ -167,6 +170,12 @@ public class InventoryUIController : MonoBehaviour
 
     private void Update()
     {
+        // Khóa toàn bộ phím tắt Kho đồ (I / Escape) khi game đang mở Pause Menu
+        if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused)
+        {
+            return;
+        }
+
         // Tối ưu GC: tuyệt đối không gọi Find(), GetComponent() hay tạo chuỗi trong Update(), chỉ bắt phím tắt PC
         if (WasToggleBagKeyPressed())
         {
@@ -343,7 +352,12 @@ public class InventoryUIController : MonoBehaviour
     /// <summary>Mở Popup kho đồ. Tự động chặn nếu đang có hội thoại hoạt động hoặc đang chuyển phòng.</summary>
     public void OpenPopup()
     {
-        // Edge Case: chặn mở kho đồ trong lúc đang xem hội thoại / Cutscene hoặc đang chuyển phòng
+        // Edge Case: chặn mở kho đồ khi đang Pause, đang hội thoại / Cutscene, đang chuyển phòng hoặc đang mở Keypad
+        if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused)
+        {
+            return;
+        }
+
         if (DialogueManager.Instance != null && DialogueManager.Instance.IsDialogueActive)
         {
             return;
@@ -381,6 +395,9 @@ public class InventoryUIController : MonoBehaviour
             ClearInspection();
             return;
         }
+
+        // Ghi nhận frame vừa đóng để PauseMenuController không mở đè khi cùng bắt phím Escape trong 1 frame
+        LastClosedFrame = Time.frameCount;
 
         IsPopupOpen = false;
         ClearInspection();

@@ -37,7 +37,8 @@ public class DialogueTrigger : MonoBehaviour
         // Thoát sớm khi người chơi đứng ngoài vùng tương tác
         if (!isPlayerInRange) return;
 
-        // Edge Case: chặn lọt phím tương tác (E) khi đang Fade chuyển phòng, mở Popup Kho đồ hoặc mở bảng Keypad
+        // Edge Case: chặn lọt phím tương tác (E) khi đang Pause, chuyển phòng, mở Popup Kho đồ hoặc mở bảng Keypad
+        if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused) return;
         if (RoomTransitionManager.Instance != null && RoomTransitionManager.Instance.IsTransitioning) return;
         if (InventoryUIController.Instance != null && InventoryUIController.Instance.IsPopupOpen) return;
         if (KeypadUIController.Instance != null && KeypadUIController.Instance.IsOpen) return;
@@ -92,7 +93,12 @@ public class DialogueTrigger : MonoBehaviour
     /// </summary>
     public void PlaySequence(string overrideSequenceID)
     {
-        // Edge Case: chặn kích hoạt hội thoại mới trong lúc màn hình đang Fade chuyển phòng hoặc bảng Keypad đang mở
+        // Edge Case: chặn kích hoạt hội thoại mới khi đang Pause, đang Fade chuyển phòng hoặc bảng Keypad đang mở
+        if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused)
+        {
+            return;
+        }
+
         if (RoomTransitionManager.Instance != null && RoomTransitionManager.Instance.IsTransitioning)
         {
             return;

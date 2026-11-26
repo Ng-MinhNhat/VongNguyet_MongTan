@@ -129,8 +129,11 @@ public class PlayerController : MonoBehaviour
         if (InventoryUIController.Instance != null && InventoryUIController.Instance.IsPopupOpen)
             return true;
 
-        // Khóa di chuyển khi người chơi đang nhập mật mã trên bảng Keypad
+        // Khóa di chuyển khi người chơi đang nhập mật mã trên bảng Keypad hoặc đang tạm dừng Pause Menu
         if (KeypadUIController.Instance != null && KeypadUIController.Instance.IsOpen)
+            return true;
+
+        if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused)
             return true;
 
         return false;

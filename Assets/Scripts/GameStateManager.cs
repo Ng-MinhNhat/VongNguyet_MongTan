@@ -53,8 +53,41 @@ public class GameStateManager : MonoBehaviour
     private bool _hasCompletedStart;
     private bool _isApplyingLoadedSave;
 
-    private string SavePath => Path.Combine(Application.persistentDataPath, SaveFileName);
+    private string SavePath => GetSaveFilePath();
     private string TempSavePath => SavePath + ".tmp";
+
+    // ================= TIỆN ÍCH TĨNH CHO MAIN MENU (KHÔNG CẦN INSTANCE) =================
+
+    /// <summary>Trả về đường dẫn đầy đủ tới file Save cục bộ vongnguyet_save.json.</summary>
+    public static string GetSaveFilePath()
+    {
+        return Path.Combine(Application.persistentDataPath, SaveFileName);
+    }
+
+    /// <summary>Kiểm tra nhanh máy người chơi đã có file Save cục bộ hay chưa (dùng bật/tắt nút Tiếp tục ở MainMenu).</summary>
+    public static bool HasSaveFile()
+    {
+        return File.Exists(GetSaveFilePath());
+    }
+
+    /// <summary>Xóa file Save cục bộ an toàn từ MainMenu mà không cần khởi tạo GameStateManager.</summary>
+    public static void DeleteSaveFileStatic()
+    {
+        try
+        {
+            string savePath = GetSaveFilePath();
+            if (File.Exists(savePath))
+                File.Delete(savePath);
+
+            string tempPath = savePath + ".tmp";
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[GameStateManager] Không thể xóa file save cục bộ (Static): {e.Message}");
+        }
+    }
 
     private void Awake()
     {
@@ -85,11 +118,8 @@ public class GameStateManager : MonoBehaviour
         // Đăng ký lại trong Start() đề phòng GameStateManager.OnEnable chạy trước RoomTransitionManager.Awake
         TrySubscribeRoomTransition();
 
-        // Edge Case Execution Order: không gọi ImportSaveData ở Awake() vì InventoryManager có thể chưa Awake xong
-        if (autoLoadOnStart && File.Exists(SavePath))
-        {
-            LoadLocalGame();
-        }
+        // Edge Case Execution Order: chỉ tiêu thụ LaunchMode trong Start() sau khi InventoryManager.Awake đã chạy xong
+        ApplyPendingLaunchMode(allowEditorAutoLoadFallback: true);
 
         _hasCompletedStart = true;
 
@@ -112,13 +142,46 @@ public class GameStateManager : MonoBehaviour
             Instance = null;
     }
 
-    // ================= ĐỒNG BỘ CHUYỂN PHÒNG =================
+    // ================= ĐỒNG BỘ CHUYỂN PHÒNG & CHẾ ĐỘ KHỞI CHẠY =================
 
     private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         // Khi sang Scene mới, gắn lại sự kiện với RoomTransitionManager mới của Scene đó
         UnsubscribeRoomTransition();
         TrySubscribeRoomTransition();
+
+        // Edge Case DontDestroyOnLoad: khi quay về MainMenu rồi vào lại Gameplay Scene,
+        // Start() của GameStateManager không chạy lại -> phải tiêu thụ LaunchMode tại sceneLoaded
+        if (_hasCompletedStart)
+        {
+            ApplyPendingLaunchMode(allowEditorAutoLoadFallback: false);
+            ChangeState(GameState.FreeRoam);
+        }
+    }
+
+    private void ApplyPendingLaunchMode(bool allowEditorAutoLoadFallback)
+    {
+        SessionLaunchMode launchMode = GameSessionLaunchContext.ConsumePendingLaunchMode();
+        switch (launchMode)
+        {
+            case SessionLaunchMode.NewGame:
+                // Xóa sạch tiến độ cũ trong bộ nhớ để bắt đầu lại từ phòng khởi đầu
+                ResetSaveData();
+                break;
+
+            case SessionLaunchMode.ContinueSave:
+                LoadLocalGame();
+                break;
+
+            case SessionLaunchMode.EditorDefault:
+            default:
+                // Giữ nguyên hành vi test trực tiếp Scene trong Editor theo cờ autoLoadOnStart trên Inspector
+                if (allowEditorAutoLoadFallback && autoLoadOnStart && File.Exists(SavePath))
+                {
+                    LoadLocalGame();
+                }
+                break;
+        }
     }
 
     private void TrySubscribeRoomTransition()

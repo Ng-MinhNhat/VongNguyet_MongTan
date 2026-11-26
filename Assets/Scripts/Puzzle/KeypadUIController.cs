@@ -74,6 +74,9 @@ public class KeypadUIController : MonoBehaviour
     /// <summary>Trạng thái bảng nhập mật mã hiện đang mở hay đóng.</summary>
     public bool IsOpen { get; private set; }
 
+    /// <summary>Frame gần nhất bảng Keypad vừa đóng (dùng để PauseMenuController chống xung đột phím Escape cùng frame).</summary>
+    public int LastClosedFrame { get; private set; } = -1;
+
     [Header("Thành phần hiển thị uGUI & TextMeshPro")]
     [Tooltip("Panel gốc chứa toàn bộ giao diện Keypad (ẩn mặc định khi khởi động; đặt tách khỏi GameObject gắn script này).")]
     [SerializeField] private GameObject panelRoot;
@@ -180,8 +183,13 @@ public class KeypadUIController : MonoBehaviour
 
     private void Update()
     {
-        // Chỉ đọc bàn phím PC khi bảng đang mở và không bị khóa trong thời gian phản hồi Đúng/Sai
+        // Chỉ đọc bàn phím PC khi bảng đang mở, không bị khóa phản hồi và game không đang Pause
         if (!IsOpen || _isInputLocked)
+        {
+            return;
+        }
+
+        if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused)
         {
             return;
         }
@@ -193,12 +201,17 @@ public class KeypadUIController : MonoBehaviour
 
     /// <summary>
     /// Mở bảng nhập mật mã cho một phiên câu đố.
-    /// Trả về false nếu bị chặn bởi UI khác (đang mở Keypad, chuyển phòng, mở Kho đồ hoặc đang Hội thoại).
+    /// Trả về false nếu bị chặn bởi UI khác (đang Pause, mở Keypad, chuyển phòng, mở Kho đồ hoặc đang Hội thoại).
     /// </summary>
     public bool Open(KeypadSessionData session, Action onSolvedCallback, Action onClosedCallback = null)
     {
         // Chặn mở đè UI / xung đột hệ thống (đồng bộ cùng chuẩn với InventoryUIController & RoomTransitionManager)
         if (IsOpen)
+        {
+            return false;
+        }
+
+        if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused)
         {
             return false;
         }
@@ -251,6 +264,12 @@ public class KeypadUIController : MonoBehaviour
     public void Close(bool invokeClosedCallback = true)
     {
         StopFeedbackCoroutine();
+
+        // Ghi nhận frame vừa đóng để PauseMenuController không mở đè khi cùng bắt phím Escape trong 1 frame
+        if (IsOpen)
+        {
+            LastClosedFrame = Time.frameCount;
+        }
 
         _isInputLocked = false;
         IsOpen = false;

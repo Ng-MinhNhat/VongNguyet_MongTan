@@ -167,7 +167,12 @@ public class KeypadInteractable : MonoBehaviour
             return false;
         }
 
-        // Chặn mở nếu thiếu KeypadUIController hoặc bảng Keypad đang mở sẵn
+        // Chặn mở nếu game đang Pause, thiếu KeypadUIController hoặc bảng Keypad đang mở sẵn
+        if (PauseMenuController.Instance != null && PauseMenuController.Instance.IsPaused)
+        {
+            return false;
+        }
+
         if (KeypadUIController.Instance == null || KeypadUIController.Instance.IsOpen)
         {
             return false;
