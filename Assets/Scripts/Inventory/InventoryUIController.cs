@@ -170,6 +170,12 @@ public class InventoryUIController : MonoBehaviour
         // Tối ưu GC: tuyệt đối không gọi Find(), GetComponent() hay tạo chuỗi trong Update(), chỉ bắt phím tắt PC
         if (WasToggleBagKeyPressed())
         {
+            // Edge Case: chặn mở túi bằng phím I khi đang trong quá trình Fade chuyển phòng
+            if (!IsPopupOpen && RoomTransitionManager.Instance != null && RoomTransitionManager.Instance.IsTransitioning)
+            {
+                return;
+            }
+
             TogglePopup();
             return;
         }
@@ -329,11 +335,16 @@ public class InventoryUIController : MonoBehaviour
         }
     }
 
-    /// <summary>Mở Popup kho đồ. Tự động chặn nếu đang có hội thoại hoạt động.</summary>
+    /// <summary>Mở Popup kho đồ. Tự động chặn nếu đang có hội thoại hoạt động hoặc đang chuyển phòng.</summary>
     public void OpenPopup()
     {
-        // Edge Case: chặn mở kho đồ trong lúc đang xem hội thoại / Cutscene
+        // Edge Case: chặn mở kho đồ trong lúc đang xem hội thoại / Cutscene hoặc đang chuyển phòng
         if (DialogueManager.Instance != null && DialogueManager.Instance.IsDialogueActive)
+        {
+            return;
+        }
+
+        if (RoomTransitionManager.Instance != null && RoomTransitionManager.Instance.IsTransitioning)
         {
             return;
         }

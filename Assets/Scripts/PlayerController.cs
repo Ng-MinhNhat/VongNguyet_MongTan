@@ -77,8 +77,12 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // Nếu bị khóa (đang nói chuyện) thì return luôn, không đọc phím nữa
-        if (!canMove) return;
+        // Edge Case: khóa di chuyển và hãm vận tốc ngay khi đang hội thoại, đang Fade chuyển phòng hoặc đang mở Popup Kho đồ
+        if (IsMovementBlocked())
+        {
+            StopMovementImmediate();
+            return;
+        }
 
         // Nhận phím WASD hoặc phím mũi tên
         float moveX = Input.GetAxisRaw("Horizontal");
@@ -104,7 +108,41 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (IsMovementBlocked())
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         // Hàm này chuyên dùng để di chuyển Rigidbody2D cho mượt
         rb.linearVelocity = movementInput * moveSpeed;
+    }
+
+    private bool IsMovementBlocked()
+    {
+        if (!canMove)
+            return true;
+
+        if (RoomTransitionManager.Instance != null && RoomTransitionManager.Instance.IsTransitioning)
+            return true;
+
+        if (InventoryUIController.Instance != null && InventoryUIController.Instance.IsPopupOpen)
+            return true;
+
+        return false;
+    }
+
+    private void StopMovementImmediate()
+    {
+        movementInput = Vector2.zero;
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+
+        if (animator != null)
+        {
+            animator.SetFloat("Speed", 0f);
+        }
     }
 }

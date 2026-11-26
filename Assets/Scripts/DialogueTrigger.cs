@@ -25,12 +25,20 @@ public class DialogueTrigger : MonoBehaviour
         _itemLockPuzzle = GetComponent<ItemLockPuzzle>();
     }
 
+    private void OnDisable()
+    {
+        // Edge Case chuyển phòng: khi RoomNode tắt GameObject lúc người chơi đứng trong vùng Trigger,
+        // Unity không gọi OnTriggerExit2D -> phải reset cờ để tránh kẹt trạng thái khi bật lại phòng
+        isPlayerInRange = false;
+    }
+
     private void Update()
     {
         // Thoát sớm khi người chơi đứng ngoài vùng tương tác
         if (!isPlayerInRange) return;
 
-        // Edge Case: chặn lọt phím tương tác (E) khi người chơi đang mở Popup Kho đồ
+        // Edge Case: chặn lọt phím tương tác (E) khi đang Fade chuyển phòng hoặc đang mở Popup Kho đồ
+        if (RoomTransitionManager.Instance != null && RoomTransitionManager.Instance.IsTransitioning) return;
         if (InventoryUIController.Instance != null && InventoryUIController.Instance.IsPopupOpen) return;
 
 #if ENABLE_LEGACY_INPUT_MANAGER
@@ -83,6 +91,12 @@ public class DialogueTrigger : MonoBehaviour
     /// </summary>
     public void PlaySequence(string overrideSequenceID)
     {
+        // Edge Case: chặn kích hoạt hội thoại mới trong lúc màn hình đang Fade chuyển phòng
+        if (RoomTransitionManager.Instance != null && RoomTransitionManager.Instance.IsTransitioning)
+        {
+            return;
+        }
+
         // Kiểm tra an toàn tránh NullReferenceException và chặn bật chồng khi hội thoại đang chạy
         if (DialogueManager.Instance == null)
         {

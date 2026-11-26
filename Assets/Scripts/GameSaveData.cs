@@ -50,6 +50,8 @@ public class GameSaveData
     public string playerName = "Main";
     public int currentDay = 1;
     public string currentScene;
+    public string currentRoomId = "";
+    public string currentSpawnPointId = "";
     public List<InventorySlotData> inventory = new List<InventorySlotData>();
     public List<PuzzleState> puzzleStates = new List<PuzzleState>();
     // Dùng List<PuzzleStageEntry> thay cho Dictionary vì JsonUtility không hỗ trợ serialize Dictionary

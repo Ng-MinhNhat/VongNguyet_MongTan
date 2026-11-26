@@ -28,6 +28,9 @@ public class GameStateManager : MonoBehaviour
     [Tooltip("Nếu bật, tự động tải file Save cục bộ trong Start() (sau khi InventoryManager.Awake đã chạy xong).")]
     [SerializeField] private bool autoLoadOnStart = false;
 
+    [Tooltip("Nếu bật, tự động lưu tiến độ xuống file Save ngay sau khi người chơi hoàn tất chuyển phòng.")]
+    [SerializeField] private bool autoSaveOnRoomChange = true;
+
     // --- CÁC KÊNH PHÁT SÓNG SỰ KIỆN ---
     public event Action<GameState> OnGameStateChanged;
     public event Action<string> OnPuzzleStateTriggered;
@@ -44,6 +47,11 @@ public class GameStateManager : MonoBehaviour
 
     // Lưu ID các vật thể đã nhặt để chặn lỗi hồi sinh vật phẩm (Item Respawn) khi tải lại Scene
     private readonly HashSet<string> _consumedWorldObjectIds = new HashSet<string>();
+
+    // Lưu đúng tham chiếu RoomTransitionManager của Scene hiện tại để hủy đăng ký chống Memory Leak
+    private RoomTransitionManager _subscribedRoomTransitionManager;
+    private bool _hasCompletedStart;
+    private bool _isApplyingLoadedSave;
 
     private string SavePath => Path.Combine(Application.persistentDataPath, SaveFileName);
     private string TempSavePath => SavePath + ".tmp";
@@ -66,22 +74,89 @@ public class GameStateManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+        TrySubscribeRoomTransition();
+    }
+
     private void Start()
     {
+        // Đăng ký lại trong Start() đề phòng GameStateManager.OnEnable chạy trước RoomTransitionManager.Awake
+        TrySubscribeRoomTransition();
+
         // Edge Case Execution Order: không gọi ImportSaveData ở Awake() vì InventoryManager có thể chưa Awake xong
         if (autoLoadOnStart && File.Exists(SavePath))
         {
             LoadLocalGame();
         }
 
+        _hasCompletedStart = true;
+
         // Mặc định vào game là cho phép đi lại tự do
         ChangeState(GameState.FreeRoam);
     }
 
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+        UnsubscribeRoomTransition();
+    }
+
     private void OnDestroy()
     {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+        UnsubscribeRoomTransition();
+
         if (Instance == this)
             Instance = null;
+    }
+
+    // ================= ĐỒNG BỘ CHUYỂN PHÒNG =================
+
+    private void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Khi sang Scene mới, gắn lại sự kiện với RoomTransitionManager mới của Scene đó
+        UnsubscribeRoomTransition();
+        TrySubscribeRoomTransition();
+    }
+
+    private void TrySubscribeRoomTransition()
+    {
+        RoomTransitionManager currentRoomManager = RoomTransitionManager.Instance;
+        if (currentRoomManager == null || _subscribedRoomTransitionManager == currentRoomManager)
+            return;
+
+        UnsubscribeRoomTransition();
+        _subscribedRoomTransitionManager = currentRoomManager;
+        _subscribedRoomTransitionManager.OnRoomChanged += HandleRoomChanged;
+    }
+
+    private void UnsubscribeRoomTransition()
+    {
+        if (_subscribedRoomTransitionManager != null)
+        {
+            _subscribedRoomTransitionManager.OnRoomChanged -= HandleRoomChanged;
+            _subscribedRoomTransitionManager = null;
+        }
+    }
+
+    private void HandleRoomChanged(string roomId, string spawnPointId)
+    {
+        EnsureSaveDataIntegrity(currentSaveData);
+        currentSaveData.currentRoomId = roomId ?? string.Empty;
+        currentSaveData.currentSpawnPointId = spawnPointId ?? string.Empty;
+
+        // Chống Race Condition / ghi đè Save khi khởi tạo phòng đầu hoặc đang nạp file Save:
+        // Chỉ tự động lưu xuống đĩa khi thực sự đang chuyển phòng trong lúc chơi (IsTransitioning == true)
+        if (autoSaveOnRoomChange
+            && _hasCompletedStart
+            && !_isApplyingLoadedSave
+            && RoomTransitionManager.Instance != null
+            && RoomTransitionManager.Instance.IsTransitioning)
+        {
+            SaveGameProgress();
+        }
     }
 
     // ================= QUẢN LÝ TRẠNG THÁI =================
@@ -198,6 +273,13 @@ public class GameStateManager : MonoBehaviour
                 : currentSaveData.chapterId;
             currentSaveData.currentScene = SceneManager.GetActiveScene().name;
 
+            // Đồng bộ mã phòng & điểm spawn hiện tại từ RoomTransitionManager trước khi ghi JSON
+            if (RoomTransitionManager.Instance != null && !string.IsNullOrEmpty(RoomTransitionManager.Instance.CurrentRoomId))
+            {
+                currentSaveData.currentRoomId = RoomTransitionManager.Instance.CurrentRoomId;
+                currentSaveData.currentSpawnPointId = RoomTransitionManager.Instance.CurrentSpawnPointId ?? string.Empty;
+            }
+
             // Đồng bộ kho đồ từ InventoryManager (bản sao độc lập)
             if (InventoryManager.Instance != null)
             {
@@ -249,8 +331,11 @@ public class GameStateManager : MonoBehaviour
 
     public void LoadLocalGame()
     {
+        _isApplyingLoadedSave = true;
         try
         {
+            TrySubscribeRoomTransition();
+
             if (!File.Exists(SavePath))
             {
                 Debug.LogWarning("[GameStateManager] Không tìm thấy file save. Khởi tạo dữ liệu mới sạch.");
@@ -309,6 +394,15 @@ public class GameStateManager : MonoBehaviour
             {
                 OnPuzzleStateChanged?.Invoke(pair.Key, pair.Value);
             }
+
+            // Khôi phục vị trí phòng đã lưu (nếu Save cũ chưa có currentRoomId thì để RoomTransitionManager tự dùng phòng khởi đầu)
+            if (RoomTransitionManager.Instance != null && !string.IsNullOrEmpty(currentSaveData.currentRoomId))
+            {
+                RoomTransitionManager.Instance.TeleportImmediate(
+                    currentSaveData.currentRoomId,
+                    currentSaveData.currentSpawnPointId
+                );
+            }
         }
         catch (Exception e)
         {
@@ -316,12 +410,18 @@ public class GameStateManager : MonoBehaviour
             Debug.LogWarning($"[GameStateManager] Tải game thất bại do lỗi đọc/định dạng file save ({e.Message}). Khởi tạo dữ liệu mới sạch.");
             InitializeCleanSaveState();
         }
+        finally
+        {
+            _isApplyingLoadedSave = false;
+        }
     }
 
     /// <summary>Đặt lại toàn bộ dữ liệu Save về trạng thái sạch (dùng cho nút Chơi mới / New Game và test nhanh).</summary>
     public void ResetSaveData(bool deleteLocalFile = false)
     {
         currentSaveData = new GameSaveData();
+        currentSaveData.currentRoomId = string.Empty;
+        currentSaveData.currentSpawnPointId = string.Empty;
         _puzzleStages.Clear();
         _consumedWorldObjectIds.Clear();
 
@@ -370,6 +470,8 @@ public class GameStateManager : MonoBehaviour
         if (string.IsNullOrWhiteSpace(data.chapterId)) data.chapterId = DefaultChapterId;
         if (string.IsNullOrWhiteSpace(data.playerName)) data.playerName = DefaultPlayerName;
         if (data.currentDay <= 0) data.currentDay = 1;
+        if (data.currentRoomId == null) data.currentRoomId = string.Empty;
+        if (data.currentSpawnPointId == null) data.currentSpawnPointId = string.Empty;
         if (data.puzzleStates == null) data.puzzleStates = new List<PuzzleState>();
         if (data.puzzleStages == null) data.puzzleStages = new List<PuzzleStageEntry>();
         if (data.consumedWorldObjectIds == null) data.consumedWorldObjectIds = new List<string>();
