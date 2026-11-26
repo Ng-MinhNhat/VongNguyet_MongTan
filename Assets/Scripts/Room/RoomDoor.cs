@@ -158,6 +158,12 @@ public class RoomDoor : MonoBehaviour
             return false;
         }
 
+        // Chặn bước qua cửa khi người chơi đang nhập mật mã trên bảng Keypad
+        if (KeypadUIController.Instance != null && KeypadUIController.Instance.IsOpen)
+        {
+            return false;
+        }
+
         _isProcessingDoor = true;
         try
         {

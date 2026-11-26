@@ -170,8 +170,13 @@ public class InventoryUIController : MonoBehaviour
         // Tối ưu GC: tuyệt đối không gọi Find(), GetComponent() hay tạo chuỗi trong Update(), chỉ bắt phím tắt PC
         if (WasToggleBagKeyPressed())
         {
-            // Edge Case: chặn mở túi bằng phím I khi đang trong quá trình Fade chuyển phòng
+            // Edge Case: chặn mở túi bằng phím I khi đang chuyển phòng hoặc đang mở bảng Keypad
             if (!IsPopupOpen && RoomTransitionManager.Instance != null && RoomTransitionManager.Instance.IsTransitioning)
+            {
+                return;
+            }
+
+            if (!IsPopupOpen && KeypadUIController.Instance != null && KeypadUIController.Instance.IsOpen)
             {
                 return;
             }
@@ -345,6 +350,12 @@ public class InventoryUIController : MonoBehaviour
         }
 
         if (RoomTransitionManager.Instance != null && RoomTransitionManager.Instance.IsTransitioning)
+        {
+            return;
+        }
+
+        // Edge Case: chặn mở túi đồ đè lên bảng nhập mật mã Keypad
+        if (KeypadUIController.Instance != null && KeypadUIController.Instance.IsOpen)
         {
             return;
         }

@@ -191,9 +191,10 @@ public class WorldItemPickup : MonoBehaviour
         // Chặn nhặt đúp / spam-click trên màn hình cảm ứng ngay dòng đầu tiên
         if (_isPickedUp || !_isVisible) return;
 
-        // Chặn bấm xuyên UI và chặn nhặt đồ khi đang mở hội thoại Cutscene
+        // Chặn bấm xuyên UI và chặn nhặt đồ khi đang mở hội thoại Cutscene hoặc đang mở bảng Keypad
         if (IsPointerOverUI()) return;
         if (DialogueManager.Instance != null && DialogueManager.Instance.IsDialogueActive) return;
+        if (KeypadUIController.Instance != null && KeypadUIController.Instance.IsOpen) return;
 
         if (itemData == null)
         {
