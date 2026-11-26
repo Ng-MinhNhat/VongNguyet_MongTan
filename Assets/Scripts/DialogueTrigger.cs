@@ -17,26 +17,36 @@ public class DialogueTrigger : MonoBehaviour
     // Biến để biết nhân vật có đang đứng trong vùng tương tác hay không
     private bool isPlayerInRange = false;
 
+    // Cache sẵn ItemLockPuzzle ở Awake() để tuyệt đối không gọi GetComponent() trong Update()
+    private ItemLockPuzzle _itemLockPuzzle;
+
+    private void Awake()
+    {
+        _itemLockPuzzle = GetComponent<ItemLockPuzzle>();
+    }
+
     private void Update()
     {
-        // Nếu người chơi đang ở gần, bấm phím E, và hệ thống thoại đang không bận rộn thì bật thoại
-       if (!isPlayerInRange || !Input.GetKeyDown(interactKey)) return;
+        // Thoát sớm khi người chơi đứng ngoài vùng tương tác
+        if (!isPlayerInRange) return;
 
-        // Trường hợp 1: Đối tượng DialogueManager trong Scene chưa gắn script hoặc đang bị tắt (Inactive)
-        if (DialogueManager.Instance == null)
+        // Edge Case: chặn lọt phím tương tác (E) khi người chơi đang mở Popup Kho đồ
+        if (InventoryUIController.Instance != null && InventoryUIController.Instance.IsPopupOpen) return;
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (!Input.GetKeyDown(interactKey)) return;
+#else
+        return;
+#endif
+
+        // Nếu vật thể có gắn ItemLockPuzzle (VD: Két Sắt) -> nhường quyền xử lý chính cho câu đố
+        if (_itemLockPuzzle != null)
         {
-            Debug.LogError("[DialogueTrigger] LỖI: DialogueManager.Instance đang bị NULL! Hãy kiểm tra đối tượng DialogueManager trong Hierarchy.");
+            _itemLockPuzzle.TryInteract();
             return;
         }
 
-        // Trường hợp 2: Hệ thống đang bị kẹt ở trạng thái đang mở hội thoại
-        if (DialogueManager.Instance.IsDialogueActive)
-        {
-            Debug.LogWarning("[DialogueTrigger] Bị chặn vì DialogueManager.IsDialogueActive đang là TRUE.");
-            return;
-        }
-
-        Debug.Log($"[DialogueTrigger] Đã nhận phím '{interactKey}' -> Gọi hội thoại: {sequenceID}");
+        // Đối tượng hội thoại thông thường: giữ nguyên luồng kích hoạt đoạn thoại mặc định
         PlayDialogue();
     }
 
@@ -47,7 +57,7 @@ public class DialogueTrigger : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             isPlayerInRange = true;
-            Debug.Log("[DialogueTrigger] Bro đã vào vùng tương tác. Bấm 'E' để nói chuyện.");
+            Debug.Log("[DialogueTrigger] Đã vào vùng tương tác. Bấm 'E' để tương tác.");
         }
     }
 
@@ -57,19 +67,48 @@ public class DialogueTrigger : MonoBehaviour
         if (collision.CompareTag("Player"))
         {
             isPlayerInRange = false;
-            Debug.Log("[DialogueTrigger] Bro đã rời khỏi vùng tương tác.");
+            Debug.Log("[DialogueTrigger] Đã rời khỏi vùng tương tác.");
         }
     }
 
+    /// <summary>Gọi đoạn thoại mặc định theo trường sequenceID cấu hình trên Inspector.</summary>
     public void PlayDialogue()
     {
-        if (dialogueFile != null)
+        PlaySequence(sequenceID);
+    }
+
+    /// <summary>
+    /// Gọi bất kỳ nhánh thoại nào trong cùng file dialogueFile.
+    /// Có thể kéo thả trực tiếp vào các UnityEvent của ItemLockPuzzle trên Inspector (truyền ID nhánh thoại dạng chuỗi).
+    /// </summary>
+    public void PlaySequence(string overrideSequenceID)
+    {
+        // Kiểm tra an toàn tránh NullReferenceException và chặn bật chồng khi hội thoại đang chạy
+        if (DialogueManager.Instance == null)
         {
-            DialogueManager.Instance.StartDialogue(dialogueFile, sequenceID);
+            Debug.LogError("[DialogueTrigger] LỖI: DialogueManager.Instance đang bị NULL! Hãy kiểm tra đối tượng DialogueManager trong Hierarchy.");
+            return;
         }
-        else
+
+        if (DialogueManager.Instance.IsDialogueActive)
         {
-            Debug.LogError("Bro quên kéo file JSON kịch bản vào DialogueTrigger rồi!");
+            Debug.LogWarning("[DialogueTrigger] Bị chặn vì DialogueManager.IsDialogueActive đang là TRUE.");
+            return;
         }
+
+        if (dialogueFile == null)
+        {
+            Debug.LogError($"[DialogueTrigger] Chưa gán file JSON kịch bản (dialogueFile) trên '{gameObject.name}'.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(overrideSequenceID))
+        {
+            Debug.LogWarning($"[DialogueTrigger] overrideSequenceID đang rỗng trên '{gameObject.name}'.");
+            return;
+        }
+
+        Debug.Log($"[DialogueTrigger] Gọi nhánh hội thoại: '{overrideSequenceID}' từ '{dialogueFile.name}'.");
+        DialogueManager.Instance.StartDialogue(dialogueFile, overrideSequenceID);
     }
 }

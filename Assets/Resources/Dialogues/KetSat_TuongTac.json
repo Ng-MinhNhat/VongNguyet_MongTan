@@ -14,6 +14,39 @@
         }
       ],
       "choices": []
+    },
+    {
+      "dialogueID": "KetSat_SaiVatPham",
+      "lines": [
+        {
+          "speaker": "{playerName}",
+          "text": "Thứ này không khớp với ổ khóa của chiếc két sắt.",
+          "portrait": "Main_TuTin"
+        }
+      ],
+      "choices": []
+    },
+    {
+      "dialogueID": "KetSat_MoThanhCong",
+      "lines": [
+        {
+          "speaker": "{playerName}",
+          "text": "Cạch! Chiếc chìa khóa vừa khít, két sắt đã mở rồi.",
+          "portrait": "Main_TuTin"
+        }
+      ],
+      "choices": []
+    },
+    {
+      "dialogueID": "KetSat_DaMo",
+      "lines": [
+        {
+          "speaker": "{playerName}",
+          "text": "Chiếc két sắt đã được mở sẵn, bên trong không còn gì nữa.",
+          "portrait": "Main_TuTin"
+        }
+      ],
+      "choices": []
     }
   ]
 }

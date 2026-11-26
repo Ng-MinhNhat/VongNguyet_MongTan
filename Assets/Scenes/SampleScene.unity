@@ -1401,6 +1401,7 @@ GameObject:
   - component: {fileID: 459634432}
   - component: {fileID: 459634431}
   - component: {fileID: 459634430}
+  - component: {fileID: 459634434}
   m_Layer: 0
   m_Name: KetSat
   m_TagString: Untagged
@@ -1543,6 +1544,88 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &459634434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459634429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 643b58b6005f0c140b658e142150534d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemLockPuzzle
+  puzzleId: Ch1_KetSat_MoKhoa
+  requiredItemId: ch1_key_ketsat
+  consumeItemOnSuccess: 1
+  solvedStageName: Solved
+  rewardItem: {fileID: 0}
+  rewardQuantity: 1
+  allowDirectClickOrTouch: 1
+  onSolved:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 459634430}
+        m_TargetAssemblyTypeName: DialogueTrigger, Assembly-CSharp
+        m_MethodName: PlaySequence
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: KetSat_MoThanhCong
+          m_BoolArgument: 0
+        m_CallState: 2
+  onRestoredSolvedState:
+    m_PersistentCalls:
+      m_Calls: []
+  onAlreadySolved:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 459634430}
+        m_TargetAssemblyTypeName: DialogueTrigger, Assembly-CSharp
+        m_MethodName: PlaySequence
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: KetSat_DaMo
+          m_BoolArgument: 0
+        m_CallState: 2
+  onNoItemEquipped:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 459634430}
+        m_TargetAssemblyTypeName: DialogueTrigger, Assembly-CSharp
+        m_MethodName: PlaySequence
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: KetSat_MoDau
+          m_BoolArgument: 0
+        m_CallState: 2
+  onWrongItemEquipped:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 459634430}
+        m_TargetAssemblyTypeName: DialogueTrigger, Assembly-CSharp
+        m_MethodName: PlaySequence
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: KetSat_SaiVatPham
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &490825127
 GameObject:
   m_ObjectHideFlags: 0
