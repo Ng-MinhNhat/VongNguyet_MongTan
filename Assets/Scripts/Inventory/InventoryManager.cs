@@ -271,6 +271,11 @@ public class InventoryManager : MonoBehaviour
 
         AddItem(resultItem, matchedRecipe.ResultQuantity);
 
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_Item_Combine");
+        }
+
         if (autoSaveOnCombine && GameStateManager.Instance != null)
         {
             GameStateManager.Instance.SaveGameProgress();

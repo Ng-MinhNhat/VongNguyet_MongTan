@@ -754,6 +754,11 @@ public class InventoryUIController : MonoBehaviour
             return;
         }
 
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_UI_Click");
+        }
+
         StopCombineFeedbackCoroutine();
         _isCombineMode = true;
         _combineFirstItem = selectedItem;
@@ -773,6 +778,11 @@ public class InventoryUIController : MonoBehaviour
 
     private void HandleCancelCombineClicked()
     {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_UI_Click");
+        }
+
         ExitCombineMode(true);
     }
 

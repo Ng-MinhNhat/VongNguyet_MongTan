@@ -154,6 +154,12 @@ public class ItemInspectUIController : MonoBehaviour
 
         SetGameObjectActiveSafe(panelRoot, true);
         IsOpen = true;
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_UI_Click");
+        }
+
         return true;
     }
 
@@ -165,6 +171,11 @@ public class ItemInspectUIController : MonoBehaviour
         if (!IsOpen)
         {
             return;
+        }
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_UI_Click");
         }
 
         IsOpen = false;

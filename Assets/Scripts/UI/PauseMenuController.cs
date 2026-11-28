@@ -35,6 +35,9 @@ public class PauseMenuController : MonoBehaviour
     [Tooltip("Nút lưu tiến độ thủ công ngay trong menu Tạm dừng.")]
     [SerializeField] private Button saveButton;
 
+    [Tooltip("Nút mở bảng Cài đặt âm thanh ngay trong menu Tạm dừng.")]
+    [SerializeField] private Button settingsButton;
+
     [Tooltip("Nút quay về màn hình Main Menu.")]
     [SerializeField] private Button mainMenuButton;
 
@@ -107,6 +110,13 @@ public class PauseMenuController : MonoBehaviour
             return;
         }
 
+        // BẮT BUỘC ưu tiên Settings trước: nếu Settings đang mở hoặc vừa đóng ở đúng frame hiện tại -> giữ nguyên Pause Menu
+        if (SettingsUIController.Instance != null
+            && (SettingsUIController.Instance.IsOpen || SettingsUIController.Instance.LastClosedFrame == Time.frameCount))
+        {
+            return;
+        }
+
         // Nếu đang Pause -> bấm Escape lần nữa để tiếp tục chơi
         if (IsPaused)
         {
@@ -146,6 +156,12 @@ public class PauseMenuController : MonoBehaviour
     /// <summary>Khôi phục Time.timeScale = 1, tắt Pause Panel và trả lại quyền điều khiển cho người chơi.</summary>
     public void Resume()
     {
+        // Đóng bảng Settings trước nếu đang mở để đảm bảo lưu cấu hình âm lượng xuống PlayerPrefs sạch sẽ
+        if (SettingsUIController.Instance != null && SettingsUIController.Instance.IsOpen)
+        {
+            SettingsUIController.Instance.Close();
+        }
+
         StopFeedbackCoroutine();
         HideFeedbackText();
 
@@ -157,9 +173,22 @@ public class PauseMenuController : MonoBehaviour
         UpdateHudPauseButtonVisibility();
     }
 
+    /// <summary>Mở bảng Cài đặt âm thanh từ Pause Menu.</summary>
+    public void OpenSettings()
+    {
+        PlayUiClickSfx();
+
+        if (SettingsUIController.Instance != null)
+        {
+            SettingsUIController.Instance.Open();
+        }
+    }
+
     /// <summary>Lưu tiến độ thủ công và hiện thông báo phản hồi bằng Time.unscaledDeltaTime (hoạt động khi timeScale = 0).</summary>
     public void SaveGameManual()
     {
+        PlayUiClickSfx();
+
         if (GameStateManager.Instance == null)
         {
             Debug.LogWarning("[PauseMenuController] Không tìm thấy GameStateManager.Instance để lưu tiến độ.");
@@ -178,6 +207,12 @@ public class PauseMenuController : MonoBehaviour
     /// <summary>Khôi phục Time.timeScale = 1 bắt buộc rồi quay về Scene Main Menu.</summary>
     public void ReturnToMainMenu()
     {
+        // Đóng bảng Settings trước nếu đang mở để đảm bảo lưu cấu hình PlayerPrefs trước khi rời Scene
+        if (SettingsUIController.Instance != null && SettingsUIController.Instance.IsOpen)
+        {
+            SettingsUIController.Instance.Close();
+        }
+
         StopFeedbackCoroutine();
 
         // BẮT BUỘC khôi phục Time.timeScale = 1f và IsPaused = false trước khi LoadScene để chống đóng băng ở MainMenu
@@ -279,9 +314,10 @@ public class PauseMenuController : MonoBehaviour
         }
 
         if (hudPauseButton != null) hudPauseButton.onClick.AddListener(Pause);
-        if (resumeButton != null) resumeButton.onClick.AddListener(Resume);
+        if (resumeButton != null) resumeButton.onClick.AddListener(HandleResumeButtonClicked);
         if (saveButton != null) saveButton.onClick.AddListener(SaveGameManual);
-        if (mainMenuButton != null) mainMenuButton.onClick.AddListener(ReturnToMainMenu);
+        if (settingsButton != null) settingsButton.onClick.AddListener(OpenSettings);
+        if (mainMenuButton != null) mainMenuButton.onClick.AddListener(HandleMainMenuButtonClicked);
 
         _areListenersRegistered = true;
     }
@@ -294,11 +330,32 @@ public class PauseMenuController : MonoBehaviour
         }
 
         if (hudPauseButton != null) hudPauseButton.onClick.RemoveListener(Pause);
-        if (resumeButton != null) resumeButton.onClick.RemoveListener(Resume);
+        if (resumeButton != null) resumeButton.onClick.RemoveListener(HandleResumeButtonClicked);
         if (saveButton != null) saveButton.onClick.RemoveListener(SaveGameManual);
-        if (mainMenuButton != null) mainMenuButton.onClick.RemoveListener(ReturnToMainMenu);
+        if (settingsButton != null) settingsButton.onClick.RemoveListener(OpenSettings);
+        if (mainMenuButton != null) mainMenuButton.onClick.RemoveListener(HandleMainMenuButtonClicked);
 
         _areListenersRegistered = false;
+    }
+
+    private void HandleResumeButtonClicked()
+    {
+        PlayUiClickSfx();
+        Resume();
+    }
+
+    private void HandleMainMenuButtonClicked()
+    {
+        PlayUiClickSfx();
+        ReturnToMainMenu();
+    }
+
+    private static void PlayUiClickSfx()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_UI_Click");
+        }
     }
 
     private void ResetInitialState()

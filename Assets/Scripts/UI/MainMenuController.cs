@@ -25,6 +25,9 @@ public class MainMenuController : MonoBehaviour
     [Tooltip("Nút bắt đầu Chơi mới.")]
     [SerializeField] private Button newGameButton;
 
+    [Tooltip("Nút mở bảng Cài đặt âm thanh.")]
+    [SerializeField] private Button settingsButton;
+
     [Tooltip("Nút thoát trò chơi.")]
     [SerializeField] private Button quitButton;
 
@@ -75,6 +78,11 @@ public class MainMenuController : MonoBehaviour
         {
             versionText.text = $"v{Application.version}";
         }
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlayBgm("BGM_MainMenu");
+        }
     }
 
     private void OnDisable()
@@ -95,6 +103,13 @@ public class MainMenuController : MonoBehaviour
 
     private void Update()
     {
+        // Chống xung đột Escape cùng frame: nếu bảng Settings đang mở hoặc vừa đóng -> không đóng nhầm Popup xác nhận
+        if (SettingsUIController.Instance != null
+            && (SettingsUIController.Instance.IsOpen || SettingsUIController.Instance.LastClosedFrame == Time.frameCount))
+        {
+            return;
+        }
+
         // Chỉ lắng nghe phím Escape để đóng Popup xác nhận khi Popup đang mở và chưa bắt đầu chuyển Scene
         if (_isTransitioning || confirmNewGamePanel == null || !confirmNewGamePanel.activeSelf)
         {
@@ -139,6 +154,8 @@ public class MainMenuController : MonoBehaviour
             return;
         }
 
+        PlayUiClickSfx();
+
         if (!ValidateGameplaySceneInBuildSettings())
         {
             return;
@@ -155,6 +172,8 @@ public class MainMenuController : MonoBehaviour
             return;
         }
 
+        PlayUiClickSfx();
+
         // Nếu đã có file Save và có gán Popup xác nhận -> hỏi xác nhận trước khi xóa tiến độ cũ
         if (GameStateManager.HasSaveFile() && confirmNewGamePanel != null)
         {
@@ -165,6 +184,21 @@ public class MainMenuController : MonoBehaviour
         StartNewGame();
     }
 
+    private void OnSettingsClicked()
+    {
+        if (_isTransitioning)
+        {
+            return;
+        }
+
+        PlayUiClickSfx();
+
+        if (SettingsUIController.Instance != null)
+        {
+            SettingsUIController.Instance.Open();
+        }
+    }
+
     private void OnConfirmNewGameYesClicked()
     {
         if (_isTransitioning)
@@ -172,6 +206,7 @@ public class MainMenuController : MonoBehaviour
             return;
         }
 
+        PlayUiClickSfx();
         SetGameObjectActiveSafe(confirmNewGamePanel, false);
         StartNewGame();
     }
@@ -183,6 +218,7 @@ public class MainMenuController : MonoBehaviour
             return;
         }
 
+        PlayUiClickSfx();
         SetGameObjectActiveSafe(confirmNewGamePanel, false);
     }
 
@@ -307,6 +343,7 @@ public class MainMenuController : MonoBehaviour
 
         if (continueButton != null) continueButton.onClick.AddListener(OnContinueClicked);
         if (newGameButton != null) newGameButton.onClick.AddListener(OnNewGameClicked);
+        if (settingsButton != null) settingsButton.onClick.AddListener(OnSettingsClicked);
         if (quitButton != null) quitButton.onClick.AddListener(OnQuitClicked);
         if (confirmYesButton != null) confirmYesButton.onClick.AddListener(OnConfirmNewGameYesClicked);
         if (confirmNoButton != null) confirmNoButton.onClick.AddListener(OnConfirmNewGameNoClicked);
@@ -323,6 +360,7 @@ public class MainMenuController : MonoBehaviour
 
         if (continueButton != null) continueButton.onClick.RemoveListener(OnContinueClicked);
         if (newGameButton != null) newGameButton.onClick.RemoveListener(OnNewGameClicked);
+        if (settingsButton != null) settingsButton.onClick.RemoveListener(OnSettingsClicked);
         if (quitButton != null) quitButton.onClick.RemoveListener(OnQuitClicked);
         if (confirmYesButton != null) confirmYesButton.onClick.RemoveListener(OnConfirmNewGameYesClicked);
         if (confirmNoButton != null) confirmNoButton.onClick.RemoveListener(OnConfirmNewGameNoClicked);
@@ -334,9 +372,18 @@ public class MainMenuController : MonoBehaviour
     {
         if (continueButton != null) continueButton.interactable = interactable;
         if (newGameButton != null) newGameButton.interactable = interactable;
+        if (settingsButton != null) settingsButton.interactable = interactable;
         if (quitButton != null) quitButton.interactable = interactable;
         if (confirmYesButton != null) confirmYesButton.interactable = interactable;
         if (confirmNoButton != null) confirmNoButton.interactable = interactable;
+    }
+
+    private static void PlayUiClickSfx()
+    {
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_UI_Click");
+        }
     }
 
     private void ResetFadeImmediate()

@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bc7cd11bdc01e14fbc19034fd2f33aa, type: 3}
+  m_Name: AudioLibrary_Ch1
+  m_EditorClassIdentifier: Assembly-CSharp::AudioLibrary
+  bgmEntries:
+  - id: BGM_MainMenu
+    clip: {fileID: 8300000, guid: 084da35939d76bf40bdf5a9af4ea4780, type: 3}
+    defaultVolume: 0.7
+    loop: 1
+  - id: BGM_BietThu_BinhThuong
+    clip: {fileID: 8300000, guid: b5dbdb8c17fa6a04da74113c37e5baee, type: 3}
+    defaultVolume: 0.65
+    loop: 1
+  sfxEntries:
+  - id: SFX_UI_Click
+    clip: {fileID: 8300000, guid: f66c0d04847c843479a0317533842096, type: 3}
+    defaultVolume: 0.8
+    pitchVariance: 0.04
+  - id: SFX_Item_Pickup
+    clip: {fileID: 8300000, guid: 47c444ef08e4e6a47bb565bafc4213ed, type: 3}
+    defaultVolume: 0.9
+    pitchVariance: 0.05
+  - id: SFX_Item_Combine
+    clip: {fileID: 8300000, guid: 120d6987e542fc5489319502450ec32a, type: 3}
+    defaultVolume: 0.95
+    pitchVariance: 0.03
+  - id: SFX_Keypad_Press
+    clip: {fileID: 8300000, guid: 71f8e5ae3570298458bdb6eca097822d, type: 3}
+    defaultVolume: 0.75
+    pitchVariance: 0.06
+  - id: SFX_Keypad_Success
+    clip: {fileID: 8300000, guid: b1fb5ac1eb82eff45a355ceb38b63270, type: 3}
+    defaultVolume: 0.95
+    pitchVariance: 0
+  - id: SFX_Keypad_Error
+    clip: {fileID: 8300000, guid: 81961f9dd62c1a64c86d9d43a0aa6fdb, type: 3}
+    defaultVolume: 0.9
+    pitchVariance: 0
+  - id: SFX_Door_Transition
+    clip: {fileID: 8300000, guid: 695f1107743351345b16619aa0071721, type: 3}
+    defaultVolume: 0.85
+    pitchVariance: 0.04

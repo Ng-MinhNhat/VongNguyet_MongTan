@@ -62,6 +62,10 @@ public class RoomTransitionManager : MonoBehaviour
     [Tooltip("CinemachineConfiner2D gắn trên Camera để tự động cập nhật BoundingShape2D theo từng phòng.")]
     [SerializeField] private CinemachineConfiner2D cameraConfiner;
 
+    [Header("Âm thanh mặc định (Tùy chọn)")]
+    [Tooltip("Mã nhạc nền mặc định phát khi bắt đầu Scene gameplay (tra cứu từ AudioLibrary).")]
+    [SerializeField] private string defaultGameplayBgmId = "BGM_BietThu_BinhThuong";
+
     // Bảng tra cứu O(1) xây 1 lần trong Awake() — tuyệt đối không gọi Find() trong lúc chơi
     private readonly Dictionary<string, RoomNode> _roomLookup = new Dictionary<string, RoomNode>(StringComparer.OrdinalIgnoreCase);
 
@@ -97,6 +101,11 @@ public class RoomTransitionManager : MonoBehaviour
         if (!_hasInitializedRoom && !string.IsNullOrEmpty(initialRoomId))
         {
             TeleportImmediate(initialRoomId, initialSpawnPointId);
+        }
+
+        if (AudioManager.Instance != null && !string.IsNullOrEmpty(defaultGameplayBgmId))
+        {
+            AudioManager.Instance.PlayBgm(defaultGameplayBgmId);
         }
     }
 
@@ -147,6 +156,12 @@ public class RoomTransitionManager : MonoBehaviour
         if (InventoryUIController.Instance != null && InventoryUIController.Instance.IsPopupOpen)
         {
             InventoryUIController.Instance.ClosePopup();
+        }
+
+        // Chỉ phát SFX chuyển cửa khi có hiệu ứng Fade (không phát khi Load Save âm thầm bằng TeleportImmediate)
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_Door_Transition");
         }
 
         string safeSpawnId = string.IsNullOrEmpty(targetSpawnPointId) ? DefaultSpawnId : targetSpawnPointId;

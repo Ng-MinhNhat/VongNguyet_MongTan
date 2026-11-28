@@ -306,6 +306,11 @@ public class KeypadUIController : MonoBehaviour
         _inputBuffer.Append((char)('0' + digit));
         RefreshDisplayText();
 
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_Keypad_Press");
+        }
+
         if (_currentSession.autoSubmitWhenFull && _inputBuffer.Length >= _activeMaxDigits)
         {
             SubmitCode();
@@ -321,6 +326,11 @@ public class KeypadUIController : MonoBehaviour
 
         _inputBuffer.Length--;
         RefreshDisplayText();
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_Keypad_Press");
+        }
     }
 
     private void ClearInput()
@@ -334,6 +344,11 @@ public class KeypadUIController : MonoBehaviour
         {
             _inputBuffer.Clear();
             RefreshDisplayText();
+
+            if (AudioManager.Instance != null)
+            {
+                AudioManager.Instance.PlaySfx("SFX_Keypad_Press");
+            }
         }
     }
 
@@ -365,6 +380,11 @@ public class KeypadUIController : MonoBehaviour
         _isInputLocked = true;
         ApplyFeedbackVisual(WrongCodeStatusText, errorColor);
 
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_Keypad_Error");
+        }
+
         // Chống Softlock: try/finally bảo đảm luôn mở khóa _isInputLocked dù Coroutine bị dừng giữa chừng
         try
         {
@@ -392,6 +412,11 @@ public class KeypadUIController : MonoBehaviour
     {
         _isInputLocked = true;
         ApplyFeedbackVisual(UnlockedStatusText, successColor);
+
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_Keypad_Success");
+        }
 
         bool completedNormally = false;
         try

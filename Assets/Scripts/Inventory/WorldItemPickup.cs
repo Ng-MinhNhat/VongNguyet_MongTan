@@ -228,6 +228,12 @@ public class WorldItemPickup : MonoBehaviour
             GameStateManager.Instance.MarkObjectConsumed(worldObjectId);
         }
 
+        // Đặt SFX_Item_Pickup tại WorldItemPickup thay vì InventoryManager.AddItem để tránh nổ loạt tiếng khi Load Save
+        if (AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySfx("SFX_Item_Pickup");
+        }
+
         Debug.Log($"[WorldItemPickup] Đã nhặt vật phẩm: {itemData.displayName} ({itemData.itemId})");
 
         UnsubscribePuzzleEvent();
